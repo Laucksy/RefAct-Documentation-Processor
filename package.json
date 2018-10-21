@@ -1,0 +1,47 @@
+{
+  "name": "refact-documentation-processor",
+  "version": "1.0.0",
+  "description": "Documentation Processor for RefAct",
+  "main": "lib/app.js",
+  "scripts": {
+    "test:cm": "ENV=TEST npm run compile && mocha --recursive --compilers js:babel-core/register",
+    "test": "ENV=TEST mocha --recursive --compilers js:babel-core/register",
+    "start": "./node_modules/.bin/babel-watch ./app.js",
+    "dev": "ENV=DEV ./node_modules/.bin/babel-watch ./app.js",
+    "dist": "ENV=DIST NODE_ENV=production ./node_modules/.bin/babel-watch ./app.js",
+    "beta": "ENV=BETA ./node_modules/.bin/babel-watch ./app.js",
+    "compile": "babel --presets es2015,stage-2 -d dist/ ./",
+    "serve": "nodemon dist/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Laucksy/RefAct-Documentation-Processor.git"
+  },
+  "keywords": [
+    "refact"
+  ],
+  "author": "Erik Laucks",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "aws-sdk": "^2.273.1",
+    "express": "^4.15.3",
+    "express-validator": "^5.2.0",
+    "mongoose": "^4.10.2",
+    "morgan": "^1.9.0",
+    "node-cron": "^1.2.1",
+    "q": "^1.5.0",
+    "raven": "^2.6.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.24.1",
+    "babel-eslint": "^8.0.1",
+    "babel-preset-env": "^1.5.1",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-register": "^6.24.1",
+    "babel-watch": "^2.0.6",
+    "eslint": "^4.19.1",
+    "standard": "^10.0.2"
+  }
+}
