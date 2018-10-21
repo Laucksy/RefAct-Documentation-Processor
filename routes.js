@@ -1,8 +1,8 @@
 import express from 'express'
-import cfg from '../config'
+import cfg from './config'
 import {
   sendResponse
-} from '../helpers'
+} from './helpers'
 
 const index = express.Router()
 

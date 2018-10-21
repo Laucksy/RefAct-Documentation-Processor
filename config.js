@@ -11,7 +11,7 @@ const cfg = {
     url: 'localhost',
     user: 'refact',
     password: 'refact',
-    db: () => cfg.server.env !== 'TEST' ? 'refact' : 'refact'
+    db: 'refact'
   }
 }
 
