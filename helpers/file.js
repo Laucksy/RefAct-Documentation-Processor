@@ -20,8 +20,8 @@ export const writeToFile = (file, chapters) => {
   fs.writeFileSync(`tex/${file}`, result)
 }
 
-export const generateInputStream = (inputFile) => {
-  return fs.createReadStream(`tex/${inputFile}`)
+export const readFromFile = (inputFile) => {
+  return fs.readFileSync(`tex/${inputFile}`, 'utf-8')
 }
 
 export const generateOutputStream = (outputFile) => {

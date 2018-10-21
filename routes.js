@@ -3,9 +3,9 @@ import path from 'path'
 import latex from 'node-latex'
 import cfg from './config'
 import {
-  generateInputStream,
   generateOutputStream,
   logError,
+  readFromFile,
   sendResponse,
   writeToFile
 } from './helpers'
@@ -37,7 +37,7 @@ index.route('/generate').get((req, res) => {
 
   writeToFile(inputFile, chapters)
 
-  const pdf = latex(generateInputStream(inputFile))
+  const pdf = latex(readFromFile(inputFile), {passes: 2})
   pdf.pipe(generateOutputStream(outputFile))
 
   pdf.on('error', err => logError(err))
