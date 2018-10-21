@@ -7,12 +7,12 @@ import {
 export const writeToFile = (file, chapters) => {
   let result = ''
 
-  result += generateHeader() + '\\\\'
+  result += generateHeader() + '\n'
 
   chapters.forEach(chapter => {
     result += `\\chapter{${chapter.name}}\n`
-    result += chapter.intro.replace('\t', '\\tab').replace('\n', '\\\\')
-    result += '\\\\'
+    result += chapter.intro.replace(/\t/g, '\\tab').replace(/\n/g, '\\\\\n')
+    result += '\n'
   })
 
   result += generateFooter()
