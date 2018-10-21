@@ -5,5 +5,19 @@
 
 <body>
   <h1>Welcome to the RefAct Documentation Processor!</h1>
+  <button type="button" onclick="loadDoc()">Click here to generate the report.</button>
+
+  <script type="text/javascript">
+    function loadDoc() {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+         window.open(this.responseText, "_blank");
+        }
+      };
+      xhttp.open("GET", "54.183.93.210:3001/generate", true);
+      xhttp.send();
+    }
+  </script>
 </body>
 </html>
