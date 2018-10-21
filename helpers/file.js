@@ -17,7 +17,7 @@ export const writeToFile = (file, chapters) => {
 
   result += generateFooter()
 
-  fs.writeFileSync(file, result)
+  fs.writeFileSync(`tex/${file}`, result)
 }
 
 export const generateInputStream = (inputFile) => {
