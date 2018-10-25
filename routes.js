@@ -32,6 +32,12 @@ index.route('/home').get((req, res) => {
   res.sendFile(path.join(__dirname, 'html/index.html'))
 })
 
+index.route('/data').get(wrap(async (req, res) => {
+  const chapters = await Chapter.find().exec()
+
+  sendResponse(res, {chapters})
+}))
+
 index.route('/generate').get(wrap(async (req, res) => {
   // TODO: Pull information from db
   // TODO: Write information to file

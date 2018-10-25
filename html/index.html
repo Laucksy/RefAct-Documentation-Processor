@@ -1,22 +1,143 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 </head>
 
 <body>
-  <h1>Welcome to the RefAct Documentation Processor!</h1>
-  <button type="button" onclick="loadDoc()">Click here to generate the report.</button>
+  <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 bg-dark">
+    <h5 class="my-0 mr-md-auto font-weight-normal text-light">Lafayette College Refugee Action</h5>
+    <a class="btn btn-light" href="http://www.lafrefact.com">Visit our site</a>
+  </div>
+
+  <section class="jumbotron text-center">
+    <div class="container">
+      <h1 class="jumbotron-heading">Welcome to the RefAct Documentation Processor!</h1>
+      <p class="lead text-muted">This is a tool for automatically generating reports about the resettlement process based upon a database of information. This tool also allows for easy editing of that database to make editing the reports easy.</p>
+      <p>
+      <a href="#" class="btn btn-primary my-2" onclick="loadDoc()">Click here to generate the report.</a>
+      </p>
+    </div>
+  </section>
+
+  <br/>
+  <br/>
+  <div id="chapter-table" class="container"></div>
 
   <script type="text/javascript">
+    var chapters = []
+
+    window.onload = function () {
+      makeRequest("GET", "http://54.183.93.210:3001/data", function (res) {
+        let data = JSON.parse(res.responseText);
+        chapters = data.chapters;
+
+        let table = document.getElementById("chapter-table");
+        for (let i = 0; i < chapters.length; i++) {
+          let row = document.createElement("div");
+          let cell = document.createElement("div");
+          row.classList.add("row");
+          cell.classList.add("col-xl");
+          cell.appendChild(generateCard(chapters[i]))
+
+          row.appendChild(cell);
+          table.appendChild(row);
+        }
+      });
+    }
+
     function loadDoc() {
+      makeRequest("GET", "http://54.183.93.210:3001/generate", function (res) {
+        window.open(res.responseText, "_blank");
+      });
+    }
+
+    function makeRequest(method, url, success) {
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-         window.open(this.responseText, "_blank");
-        }
+         success(this);
+       } else if (this.readyState === 4) {
+         alert("Error on " + url + ": " + this.statusText)
+       }
       };
-      xhttp.open("GET", "http://54.183.93.210:3001/generate", true);
+      xhttp.open(method, url, true);
       xhttp.send();
+    }
+
+    function generateCard(chapter) {
+      let card = document.createElement("div");
+      card.className = "card mb-4 shadow-sm";
+      let cardBody = document.createElement("div");
+      cardBody.className = "card-body";
+      let cardTitle = document.createElement("h5");
+      cardTitle.className = "card-title";
+      cardTitle.innerHTML = "<strong>" + chapter.title + "</strong>";
+      let cardText = document.createElement("p");
+      cardText.className = "card-text";
+      cardText.innerHTML = chapter.intro.replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;").replace(/\n/g, "<br/>");
+      let dFlex = document.createElement("div");
+      dFlex.className = "d-flex justify-content-between align-items-center";
+      let btnGroup = document.createElement("div");
+      btnGroup.classList.add("btn-group");
+      let btn = document.createElement("button");
+      btn.setAttribute("type", "button");
+      btn.className = "btn btn-sm btn-outline-secondary";
+      btn.innerHTML = "Edit";
+
+      btnGroup.appendChild(btn);
+      dFlex.appendChild(btnGroup);
+      cardBody.appendChild(cardTitle);
+      cardBody.appendChild(cardText);
+      cardBody.appendChild(generateAccordion(chapter.title, chapter.sections))
+      cardBody.appendChild(dFlex);
+      card.appendChild(cardBody);
+      return card;
+    }
+
+    function generateAccordion(chapter, sections) {
+      let accordion = document.createElement("div");
+      accordion.setAttribute("id", "accordion" + chapter);
+      accordion.className = "mb-3";
+
+      for (let i = 0; i < sections.length; i++) {
+        let card = document.createElement("div");
+        card.className = "card";
+        let cardHeader = document.createElement("div");
+        cardHeader.className = "card-header bg-secondary";
+        cardHeader.setAttribute("id", "heading" + i);
+        let header = document.createElement("h5");
+        header.className = "mb-0";
+        let btn = document.createElement("button");
+        btn.className = "btn btn-secondary collapsed";
+        btn.setAttribute("data-toggle", "collapse");
+        btn.setAttribute("data-target", "#collapse" + i);
+        btn.setAttribute("aria-expanded", "false");
+        btn.setAttribute("aria-controls", "collapse" + i);
+        btn.innerHTML = sections[i].title;
+
+        header.appendChild(btn);
+        cardHeader.appendChild(header);
+        card.appendChild(cardHeader);
+
+        let collapse = document.createElement("div");
+        collapse.className = "collapse";
+        collapse.setAttribute("id", "collapse" + i);
+        collapse.setAttribute("aria-labelledby", "heading" + i);
+        // collapse.setAttribute("data-parent", "#accordion" + chapter);
+        let cardBody = document.createElement("div");
+        cardBody.className = "card-body";
+        cardBody.innerHTML = sections[i].description;
+
+        collapse.appendChild(cardBody);
+        card.appendChild(collapse);
+        accordion.appendChild(card);
+      }
+
+      return accordion;
     }
   </script>
 </body>
