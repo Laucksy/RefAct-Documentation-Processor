@@ -10,7 +10,7 @@ export const writeToFile = (file, chapters) => {
   result += generateHeader() + '\n'
 
   chapters.sort((a, b) => a.number - b.number).forEach(chapter => {
-    result += `\\chapter{${chapter.name}}\n`
+    result += `\\chapter{${chapter.title}}\n`
     result += chapter.intro.replace(/\t/g, '\\tab').replace(/\n/g, '\\\\\n')
     result += '\n'
   })
