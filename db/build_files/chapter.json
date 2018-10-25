@@ -6,21 +6,24 @@
     "sections": [
       {
         "title": "Cultural Orientation",
-        "description": "\t After the family has arrived and settled in, they will begin Cultural Orientation through BCS. This is run in the home by two BCS volunteers, a facilitator and a translator, and covers a range of topics, listed below (a more descriptive version can be found in the Appendix): \n LIST[[Role of the Local Resettlement Agency],[Refugee Status], [English], [Public Assistance], [U.S. Laws], [Your New Community], [Employment], [Health], [Budgeting and Personal Finance], [Housing], [Hygiene], [Safety], [Cultural Adjustment], [Education], [Transportation]] \t This Cultural Orientation will talk place over approximately four two hour sessions and concludes with a written exam (in English) aimed at assessing a general understanding of all of the topics. This exam is assisted by the translator and can be taken multiple times until satisfactorily completed, at the discretion of BCS. \n"
+        "description": "\t After the family has arrived and settled in, they will begin Cultural Orientation through BCS. This is run in the home by two BCS volunteers, a facilitator and a translator, and covers a range of topics, listed below (a more descriptive version can be found in the Appendix): \n LIST[[Role of the Local Resettlement Agency],[Refugee Status], [English], [Public Assistance], [U.S. Laws], [Your New Community], [Employment], [Health], [Budgeting and Personal Finance], [Housing], [Hygiene], [Safety], [Cultural Adjustment], [Education], [Transportation]] \t This Cultural Orientation will talk place over approximately four two hour sessions and concludes with a written exam (in English) aimed at assessing a general understanding of all of the topics. This exam is assisted by the translator and can be taken multiple times until satisfactorily completed, at the discretion of BCS. \n",
+        "subsections": []
       },
       {
         "title": "The Case Worker",
-        "description": "\t The case worker plays a critical role in the resettlement process and should serve as the main point of contact with the resettlement agency, although the director is more than willing and to help and answer questions as needed. The case worker will does the intake paperwork with BCS and facilitate much of the governmental interactions for the family, such as getting the first month of SNAP benefits expedited. The case worker is actively involved until the three month mark, at which they complete a summarizing report and significantly decrease involvement and contact with the family. This can change, however, due to extenuating circumstances and they will continue to answer questions and such after the three month mark. \n"
+        "description": "\t The case worker plays a critical role in the resettlement process and should serve as the main point of contact with the resettlement agency, although the director is more than willing and to help and answer questions as needed. The case worker will does the intake paperwork with BCS and facilitate much of the governmental interactions for the family, such as getting the first month of SNAP benefits expedited. The case worker is actively involved until the three month mark, at which they complete a summarizing report and significantly decrease involvement and contact with the family. This can change, however, due to extenuating circumstances and they will continue to answer questions and such after the three month mark. \n",
+        "subsections": []
       },
       {
         "title": "Refugee Social Services",
-        "description": "\t After the case worker is no longer actively associated with the family, they will enter into the resettlement agency's Refugee Social Services program. This program provides them with more infrequent, somewhat-on-demand assistance. Much of this is done through the Episcopal Church of the Mediator in Allentown, which runs the Refugee Center, at which the director of BCS holds \"office hours\" and through which the family can get school uniforms for the kids. \n"
+        "description": "\t After the case worker is no longer actively associated with the family, they will enter into the resettlement agency's Refugee Social Services program. This program provides them with more infrequent, somewhat-on-demand assistance. Much of this is done through the Episcopal Church of the Mediator in Allentown, which runs the Refugee Center, at which the director of BCS holds \"office hours\" and through which the family can get school uniforms for the kids. \n",
+        "subsections": []
       }
     ]
   },
   {
     "number": 2,
-    "title": "Government \& Paperwork",
+    "title": "Government & Paperwork",
     "intro": "",
     "sections": [
       {
@@ -47,11 +50,13 @@
       },
       {
         "title": "USCIS Paperwork",
-        "description": "\t USCIS, or United States Citizenship and Immigration Services, has several important pieces of paperwork associated with it. The first is the I-94, which is their record of entries to the US by people who aren't citizens or permanent residents (neither of which pertains to refugees who just entered the country). The I-94 is another critical piece of paperwork, as it is needed for social security, employment, and much more. Each member of the family has an I-94 and it may take some time for BCS to receive them from USCIS. It can range from the day of arrival to 2 or 3 weeks after. This is crucial because a lot of the resettlement process cannot continue without them. \n\t Refugees are also eligible to obtain an Employment Authorization Card (EAC). This is definitely not necessary, but can be useful in some circumstances. Refugees are legally, as part of their status, eligible to work without any extra authorization, so they don't need an EAC. This is not something that you should go too far out of your way to get, but the case worker may do this on their own. \n\t The last form of relevance is the AR-11, or the "Alien's Change of Address Card". One of these must be completed within two weeks of arrival, as well as every time they move, and can be done on paper or online. Each person must have their own AR-11 submitted each time. \n"
+        "description": "\t USCIS, or United States Citizenship and Immigration Services, has several important pieces of paperwork associated with it. The first is the I-94, which is their record of entries to the US by people who aren't citizens or permanent residents (neither of which pertains to refugees who just entered the country). The I-94 is another critical piece of paperwork, as it is needed for social security, employment, and much more. Each member of the family has an I-94 and it may take some time for BCS to receive them from USCIS. It can range from the day of arrival to 2 or 3 weeks after. This is crucial because a lot of the resettlement process cannot continue without them. \n\t Refugees are also eligible to obtain an Employment Authorization Card (EAC). This is definitely not necessary, but can be useful in some circumstances. Refugees are legally, as part of their status, eligible to work without any extra authorization, so they don't need an EAC. This is not something that you should go too far out of your way to get, but the case worker may do this on their own. \n\t The last form of relevance is the AR-11, or the \"Alien's Change of Address Card\". One of these must be completed within two weeks of arrival, as well as every time they move, and can be done on paper or online. Each person must have their own AR-11 submitted each time. \n",
+        "subsections": []
       },
       {
         "title": "The County Assistance Office",
-        "description": ""
+        "description": "",
+        "subsections": []
       }
     ]
   }

@@ -6,10 +6,19 @@ const chapterSchema = new mongoose.Schema({
   number: {type: Number, required: true, unique: true},
   title: {type: String, required: true, unique: true},
   intro: {type: String, default: ''},
-  sections: [{
-    title: {type: String, default: ''},
-    description: {type: String, default: ''}
-  }]
+  sections: {
+    type: [{
+      title: {type: String, default: ''},
+      description: {type: String, default: ''},
+      subsections: {
+        type: [{
+          title: {type: String, default: ''},
+          description: {type: String, default: ''}
+        }],
+        default: []}
+    }],
+    default: []
+  }
 })
 
 const Chapter = mongoose.model('Chapter', chapterSchema)
