@@ -17,5 +17,42 @@
         "description": "\t After the case worker is no longer actively associated with the family, they will enter into the resettlement agency's Refugee Social Services program. This program provides them with more infrequent, somewhat-on-demand assistance. Much of this is done through the Episcopal Church of the Mediator in Allentown, which runs the Refugee Center, at which the director of BCS holds \"office hours\" and through which the family can get school uniforms for the kids. \n"
       }
     ]
+  },
+  {
+    "number": 2,
+    "title": "Government \& Paperwork",
+    "intro": "",
+    "sections": [
+      {
+        "title": "Initial Paperwork",
+        "description": "\t When a family arrives, they will have a bag from the International Organization for Migration (IOM) full of paperwork. Some of this paperwork isn't that meaningful (though it should still be scanned and archived), but a few of the forms are absolutely critical to the rest of the process. \n",
+        "subsections": [
+          {
+            "title": "Flight Documents",
+            "description": "\t The flight documents are largely unimportant but still relevant for archival. This will include the booking confirmation for their flights, their customs declaration form, their tickets, their boarding passes, and their IOM itinerary. \n"
+          },
+          {
+            "title": "Reception Documents",
+            "description": "\t The reception documents contain more important documents than the flight documents. There will be some intermediary paperwork from refugee processing centers, including name/alias checks, the placement assurance form (which is when BCS contractually agrees to resettle the family), their IOM luggage tag, the biodata form (described in Chapter 3), and their travel loan contract (which will be discussed later in this chapter). \n"
+          },
+          {
+            "title": "Non-American Legal Documents",
+            "description": "\t The family may bring with them some paperwork from countries they've previously resided in. This may include birth certificates (usually for children), baptism certificates, or marriage certificates, which can be from their country of nationality, the country they resided in when they got refugee status, or some other country of previous residence. \n"
+          },
+          {
+            "title": "Travel Document/Visa",
+            "description": "\t The visa is by far the most important document in the IOM bag. This is critical for getting Social Security cards and Public Assistance, among other things. It contains pictures and basic info about each family members, as well as a Travel Document ID and each person's A-number (it stands for Alien Registration number, but will be referred to as the passport number). \n"
+          }
+        ]
+      },
+      {
+        "title": "USCIS Paperwork",
+        "description": "\t USCIS, or United States Citizenship and Immigration Services, has several important pieces of paperwork associated with it. The first is the I-94, which is their record of entries to the US by people who aren't citizens or permanent residents (neither of which pertains to refugees who just entered the country). The I-94 is another critical piece of paperwork, as it is needed for social security, employment, and much more. Each member of the family has an I-94 and it may take some time for BCS to receive them from USCIS. It can range from the day of arrival to 2 or 3 weeks after. This is crucial because a lot of the resettlement process cannot continue without them. \n\t Refugees are also eligible to obtain an Employment Authorization Card (EAC). This is definitely not necessary, but can be useful in some circumstances. Refugees are legally, as part of their status, eligible to work without any extra authorization, so they don't need an EAC. This is not something that you should go too far out of your way to get, but the case worker may do this on their own. \n\t The last form of relevance is the AR-11, or the "Alien's Change of Address Card". One of these must be completed within two weeks of arrival, as well as every time they move, and can be done on paper or online. Each person must have their own AR-11 submitted each time. \n"
+      },
+      {
+        "title": "The County Assistance Office",
+        "description": ""
+      }
+    ]
   }
 ]
