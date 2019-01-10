@@ -84,7 +84,7 @@
     }
 
     function updateState(data) {
-      if (data.categories) state.categories = data.categories;
+      if (data.categories) state.categories = data.categories.sort(function (a, b) { return a.number - b.number });
       if (data.tasks) state.tasks = data.tasks;
       if (data.paperwork) state.paperwork = data.paperwork;
       render();
@@ -127,11 +127,55 @@
     }
 
     function renderCategories(categories) {
+      return generateAccordion(categories, {
+        heading: function (item) { return "Chapter " + item.number + " - " + item.title; },
+        readonly: function (item) { return item.intro; },
+        editlayout: function (item) { return [
+            {type: "input", value: item.title, width: "33%", id: "input-1-"},
+            {type: "div", width: "34%", display: "inline-block"},
+            {type: "input", value: item.number, width: "33%", id: "input-2-"},
+            {type: "textarea", value: item.intro, width: "100%", id: "textarea-"}
+        ]; },
+        save: function (item, i) {
+          let title = document.getElementById("input-1-" + i).value;
+          let number = parseInt(document.getElementById("input-2-" + i).value);
+          let intro = document.getElementById("textarea-" + i).value;
+          console.log(item._id, title, number, intro);
+          makeRequest("POST", "http://54.183.93.210:3001/category", {_id: item._id, title, number, intro}, function (res) {
+            let dat = JSON.parse(res.responseText);
+            if (categories.slice(-1)[0].number === 0) {
+              updateState({categories: categories.slice(0, -1).concat([dat])});
+              document.getElementById("accordion-toggle-" + (categories.length - 1)).click();
+            } else {
+              let newCategories = [];
+              let index = 0;
+              for(var j = 0; j < categories.length; j++) {
+                if (categories[j].number === dat.number) {
+                  newCategories.push(dat);
+                  index = j;
+                } else newCategories.push(categories[j]);
+              }
+              updateState({categories: newCategories});
+              document.getElementById("accordion-toggle-" + index).click();
+            }
+          }, function(err) {
+            console.log(err);
+          });
+        },
+        createText: "New Category",
+        createSchema: {title: "New Category", number: 0, intro: ""}
+      });
+    }
+
+  </script>
+
+  <script type="text/javascript">
+    function generateAccordion(data, options) {
       let accordion = document.createElement("div");
       accordion.setAttribute("id", "accordion");
       accordion.className = "mb-3";
 
-      for (let i = 0; i < state.categories.length; i++) {
+      for (let i = 0; i < data.length; i++) {
         let card = document.createElement("div");
         card.className = "card";
         let cardHeader = document.createElement("div");
@@ -146,7 +190,7 @@
         btn.setAttribute("data-target", "#collapse" + i);
         btn.setAttribute("aria-expanded", "false");
         btn.setAttribute("aria-controls", "collapse" + i);
-        btn.innerHTML = "Chapter " + state.categories[i].number + " - " + state.categories[i].title;
+        btn.innerHTML = options.heading(data[i]);
 
         header.appendChild(btn);
         cardHeader.appendChild(header);
@@ -156,12 +200,11 @@
         collapse.className = "collapse";
         collapse.setAttribute("id", "collapse" + i);
         collapse.setAttribute("aria-labelledby", "heading" + i);
-        // collapse.setAttribute("data-parent", "#accordion" + chapter);
 
-        // Create view-only version of category
+        // Create view-only version of item
         let cardBody = document.createElement("div");
         cardBody.className = "card-body";
-        cardBody.innerHTML = state.categories[i].intro;
+        cardBody.innerHTML = options.readonly(data[i]);
         cardBody.setAttribute("id", "collapse-body" + i);
         cardBody.appendChild(generateButtonGroup([
           {class: "btn-sm btn-outline-secondary", name: "Edit", onclick: function() {
@@ -170,58 +213,26 @@
           }},
         ]));
 
-        // Create editing version of category
+        // Create editing version of item
         let editCardBody = document.createElement("div");
         editCardBody.className = "card-body";
         editCardBody.style.display = "none";
         editCardBody.setAttribute("id", "collapse-body-edit" + i);
-        let editInputTitle = document.createElement("input");
-        editInputTitle.value = state.categories[i].title;
-        editInputTitle.style.width = "33%";
-        editInputTitle.setAttribute("id", "input-1-" + i);
-        editCardBody.appendChild(editInputTitle);
-        let editInputBuffer = document.createElement("div");
-        editInputBuffer.style.width = "34%";
-        editInputBuffer.style.display = "inline-block";
-        editCardBody.appendChild(editInputBuffer);
-        let editInputNumber = document.createElement("input");
-        editInputNumber.value = state.categories[i].number;
-        editInputNumber.style.width = "33%";
-        editInputNumber.setAttribute("id", "input-2-" + i);
-        editCardBody.appendChild(editInputNumber);
-        let editTextArea = document.createElement("textarea");
-        editTextArea.value = state.categories[i].intro;
-        editTextArea.style.width = "100%";
-        editTextArea.rows = "10";
-        editTextArea.setAttribute("id", "textarea-" + i);
-        editCardBody.appendChild(editTextArea);
+
+        for(var k = 0; k < options.editlayout(data[i]).length; k++) {
+          let opts = options.editlayout(data[i])[k];
+          let element = document.createElement(opts.type);
+          if (opts.value) element.value = opts.value;
+          if (opts.width) element.style.width = opts.width;
+          if (opts.display) element.style.display = opts.display;
+          if (opts.id) element.setAttribute("id", opts.id + i);
+          if (opts.type === "textarea") element.rows = "10";
+          editCardBody.appendChild(element);
+        }
+
         editCardBody.appendChild(generateButtonGroup([
           {class: "btn-sm btn-outline-secondary", name: "Save", onclick: function() {
-            let title = document.getElementById("input-1-" + i).value;
-            let number = parseInt(document.getElementById("input-2-" + i).value);
-            let intro = document.getElementById("textarea-" + i).value;
-            console.log(title, number, intro);
-            makeRequest("POST", "http://54.183.93.210:3001/category", {_id: state.categories[i]._id, title, number, intro}, function (res) {
-              let data = JSON.parse(res.responseText);
-              if (state.categories.slice(-1)[0].number === 0) {
-                updateState({categories: state.categories.slice(0, -1).concat([data])});
-                document.getElementById("accordion-toggle-" + (state.categories.length - 1)).click();
-              } else {
-                let newCategories = [];
-                let index = 0;
-                for(var j = 0; j < state.categories.length; j++) {
-                  if (state.categories[j].number === data.number) {
-                    newCategories.push(data);
-                    index = j;
-                  } else newCategories.push(state.categories[j]);
-                }
-                updateState({categories: newCategories});
-                document.getElementById("accordion-toggle-" + index).click();
-              }
-            }, function(err) {
-              console.log(err);
-            });
-
+            options.save(data[i], i);
             document.getElementById("collapse-body" + i).style.display = "block";
             document.getElementById("collapse-body-edit" + i).style.display = "none";
           }},
@@ -239,9 +250,9 @@
       }
 
       accordion.appendChild(generateButtonGroup([
-        {class: "btn-sm btn-outline-secondary", name: "New Category", onclick: function() {
-          let index = state.categories.length;
-          state.categories.push({title: "New Category", number: 0, intro: ""});
+        {class: "btn-sm btn-outline-secondary", name: options.createText, onclick: function() {
+          let index = data.length;
+          data.push(options.createSchema);
           render();
 
           document.getElementById("accordion-toggle-" + index).click();
