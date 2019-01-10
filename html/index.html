@@ -23,30 +23,72 @@
     </div>
   </section>
 
+  <div class="text-center">
+    <div class="btn-group">
+      <a href="#" id="btnCat" class="btn btn-secondary" onclick="handleClick('categories')">Categories</a>
+      <a href="#" id="btnTas" class="btn btn-light" onclick="handleClick('tasks')">Tasks</a>
+      <a href="#" id="btnPap" class="btn btn-light" onclick="handleClick('paperwork')">Paperwork</a>
+    </div>
+  </div>
   <br/>
   <br/>
-  <div id="chapter-table" class="container"></div>
+  <div id="content-table" class="container"></div>
 
   <script type="text/javascript">
-    var chapters = []
+    const state = {
+      categories: [],
+      tasks: [],
+      paperwork: [],
+      active: 'categories'
+    }
 
     window.onload = function () {
       makeRequest("GET", "http://54.183.93.210:3001/data", function (res) {
         let data = JSON.parse(res.responseText);
-        chapters = data.chapters;
-
-        let table = document.getElementById("chapter-table");
-        for (let i = 0; i < chapters.length; i++) {
-          let row = document.createElement("div");
-          let cell = document.createElement("div");
-          row.classList.add("row");
-          cell.classList.add("col-xl");
-          cell.appendChild(generateCard(chapters[i]))
-
-          row.appendChild(cell);
-          table.appendChild(row);
-        }
+        updateState(data);
+      }, function(err) {
+        console.log(err);
+        let data = {
+          categories: [{
+            "number": 1,
+            "title": "The Resettlement Agency",
+            "intro": "\t There are 9 major resettlement agencies in the US, with each one having smaller, affiliate organizations that somewhat-independently conduct their own resettlement operations. The agency for the Lehigh Valley is Bethany Christian Services (BCS, which will refer directly to the Lehigh Valley office), which is an affiliate of Lutheran Immigration and Refugee Services (LIRS). Though BCS used to be rather sizable, budget cuts in recent years have reduced the organization to three paid staff, along with a network of volunteers. The three staff members are Marla Sell, the director, Mohammed Obaid, the general case worker, and Mu Kpaw, the employment case worker. The general case worker will be referenced as just the case worker, since they handle everything except for employment. The BCS office is located at the corner of 5th Street and Linden Street in Allentown, in the second floor offices of the Grace Episcopal Church. \n\t Once BCS has notified you (the sponsoring organization) of an arrival, it is up to you to determine if you should decide to spoonsor them. There may be a variety of factors involved, such as the number of people, their ages, the availability of housing, etc. BCS will provide a biodata form that gives basic information about each person in the case, including their name, date of birth, country of nationality, country of origin (which necessarily must be different than country of nationality to be considered a refugee by the UNHCR), notable medical concerns, languages spoken/literate in, education experience, and employment experience. This information is all that you get prior to their arrival, so you must do your best to prepare with it. A lot of things can be acted upon with just this, such as gathering beds/furniture, identifying a culturally appropriate meal for the night of their arrival, and searching (in-group and out) for translators, but other things, such as school enrollment and necessary medical appointments, must wait until their arrival. \n",
+            "sections": [
+              {
+                "title": "Cultural Orientation",
+                "description": "\t After the family has arrived and settled in, they will begin Cultural Orientation through BCS. This is run in the home by two BCS volunteers, a facilitator and a translator, and covers a range of topics, listed below (a more descriptive version can be found in the Appendix): \n LIST[[Role of the Local Resettlement Agency],[Refugee Status], [English], [Public Assistance], [U.S. Laws], [Your New Community], [Employment], [Health], [Budgeting and Personal Finance], [Housing], [Hygiene], [Safety], [Cultural Adjustment], [Education], [Transportation]] \t This Cultural Orientation will talk place over approximately four two hour sessions and concludes with a written exam (in English) aimed at assessing a general understanding of all of the topics. This exam is assisted by the translator and can be taken multiple times until satisfactorily completed, at the discretion of BCS. \n",
+                "subsections": []
+              },
+              {
+                "title": "The Case Worker",
+                "description": "\t The case worker plays a critical role in the resettlement process and should serve as the main point of contact with the resettlement agency, although the director is more than willing and to help and answer questions as needed. The case worker will does the intake paperwork with BCS and facilitate much of the governmental interactions for the family, such as getting the first month of SNAP benefits expedited. The case worker is actively involved until the three month mark, at which they complete a summarizing report and significantly decrease involvement and contact with the family. This can change, however, due to extenuating circumstances and they will continue to answer questions and such after the three month mark. \n",
+                "subsections": []
+              },
+              {
+                "title": "Refugee Social Services",
+                "description": "\t After the case worker is no longer actively associated with the family, they will enter into the resettlement agency's Refugee Social Services program. This program provides them with more infrequent, somewhat-on-demand assistance. Much of this is done through the Episcopal Church of the Mediator in Allentown, which runs the Refugee Center, at which the director of BCS holds \"office hours\" and through which the family can get school uniforms for the kids. \n",
+                "subsections": []
+              }
+            ]
+          }]
+        };
+        updateState(data);
       });
+    }
+
+    function handleClick(tab) {
+      state.active = tab;
+      document.getElementById("btnCat").className = "btn" + (tab === "categories" ? " btn-secondary" : " btn-light");
+      document.getElementById("btnTas").className = "btn" + (tab === "tasks" ? " btn-secondary" : " btn-light");
+      document.getElementById("btnPap").className = "btn" + (tab === "paperwork" ? " btn-secondary" : " btn-light");
+      render();
+    }
+
+    function updateState(data) {
+      if (data.categories) state.categories = data.categories;
+      if (data.tasks) state.tasks = data.tasks;
+      if (data.paperwork) state.paperwork = data.paperwork;
+      render();
     }
 
     function loadDoc() {
@@ -55,69 +97,51 @@
       });
     }
 
-    function makeRequest(method, url, success) {
+    function makeRequest(method, url, success, error) {
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
          success(this);
        } else if (this.readyState === 4) {
-         alert("Error on " + url + ": " + this.statusText)
+         //alert("Error on " + url + ": " + this.statusText);
+         error(this);
        }
       };
       xhttp.open(method, url, true);
       xhttp.send();
     }
+  </script>
 
-    function generateCard(chapter) {
-      let card = document.createElement("div");
-      card.className = "card mb-4 shadow-sm";
-      let cardBody = document.createElement("div");
-      cardBody.className = "card-body";
-      let cardTitle = document.createElement("h5");
-      cardTitle.className = "card-title";
-      cardTitle.innerHTML = "<strong>" + chapter.title + "</strong>";
-      let cardText = document.createElement("p");
-      cardText.className = "card-text";
-      cardText.innerHTML = chapter.intro.replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;").replace(/\n/g, "<br/>");
-      let dFlex = document.createElement("div");
-      dFlex.className = "d-flex justify-content-between align-items-center";
-      let btnGroup = document.createElement("div");
-      btnGroup.classList.add("btn-group");
-      let btn = document.createElement("button");
-      btn.setAttribute("type", "button");
-      btn.className = "btn btn-sm btn-outline-secondary";
-      btn.innerHTML = "Edit";
+  <script type="text/javascript">
+    function render() {
+      let table = document.getElementById("content-table");
+      while (table.firstChild) table.removeChild(table.firstChild);
 
-      btnGroup.appendChild(btn);
-      dFlex.appendChild(btnGroup);
-      cardBody.appendChild(cardTitle);
-      cardBody.appendChild(cardText);
-      cardBody.appendChild(generateAccordion(chapter.title, chapter.sections))
-      cardBody.appendChild(dFlex);
-      card.appendChild(cardBody);
-      return card;
+      if (state.active === 'categories') table.appendChild(renderCategories(state.categories));
+      else if (state.active === 'tasks') table.appendChild(renderTasks(state.tasks));
+      else if (state.active === 'paperwork') table.appendChild(renderPaperwork(state.paperwork));
     }
 
-    function generateAccordion(chapter, sections) {
+    function renderCategories(categories) {
       let accordion = document.createElement("div");
-      accordion.setAttribute("id", "accordion" + chapter);
+      accordion.setAttribute("id", "accordion");
       accordion.className = "mb-3";
 
-      for (let i = 0; i < sections.length; i++) {
+      for (let i = 0; i < state.categories.length; i++) {
         let card = document.createElement("div");
         card.className = "card";
         let cardHeader = document.createElement("div");
-        cardHeader.className = "card-header bg-secondary";
+        cardHeader.className = "card-header bg-light";
         cardHeader.setAttribute("id", "heading" + i);
         let header = document.createElement("h5");
         header.className = "mb-0";
         let btn = document.createElement("button");
-        btn.className = "btn btn-secondary collapsed";
+        btn.className = "btn collapsed";
         btn.setAttribute("data-toggle", "collapse");
         btn.setAttribute("data-target", "#collapse" + i);
         btn.setAttribute("aria-expanded", "false");
         btn.setAttribute("aria-controls", "collapse" + i);
-        btn.innerHTML = sections[i].title;
+        btn.innerHTML = "Chapter " + state.categories[i].number + " - " + state.categories[i].title;
 
         header.appendChild(btn);
         cardHeader.appendChild(header);
@@ -128,16 +152,86 @@
         collapse.setAttribute("id", "collapse" + i);
         collapse.setAttribute("aria-labelledby", "heading" + i);
         // collapse.setAttribute("data-parent", "#accordion" + chapter);
+
+        // Create view-only version of category
         let cardBody = document.createElement("div");
         cardBody.className = "card-body";
-        cardBody.innerHTML = sections[i].description;
+        cardBody.innerHTML = state.categories[i].intro;
+        cardBody.setAttribute("id", "collapse-body" + i);
+        cardBody.appendChild(generateButtonGroup([
+          {class: "btn-sm btn-outline-secondary", name: "Edit", onclick: function() {
+            document.getElementById("collapse-body" + i).style.display = "none";
+            document.getElementById("collapse-body-edit" + i).style.display = "block";
+          }},
+        ]));
+
+        // Create editing version of category
+        let editCardBody = document.createElement("div");
+        editCardBody.className = "card-body";
+        editCardBody.style.display = "none";
+        editCardBody.setAttribute("id", "collapse-body-edit" + i);
+        let editInputTitle = document.createElement("input");
+        editInputTitle.value = state.categories[i].title;
+        editInputTitle.style.width = "33%";
+        editInputTitle.setAttribute("id", "input-1-" + i);
+        editCardBody.appendChild(editInputTitle);
+        let editInputBuffer = document.createElement("div");
+        editInputBuffer.style.width = "34%";
+        editInputBuffer.style.display = "inline-block";
+        editCardBody.appendChild(editInputBuffer);
+        let editInputNumber = document.createElement("input");
+        editInputNumber.value = state.categories[i].number;
+        editInputNumber.style.width = "33%";
+        editInputNumber.setAttribute("id", "input-2-" + i);
+        editCardBody.appendChild(editInputNumber);
+        let editTextArea = document.createElement("textarea");
+        editTextArea.value = state.categories[i].intro;
+        editTextArea.style.width = "100%";
+        editTextArea.rows = "10";
+        editTextArea.setAttribute("id", "textarea-" + i);
+        editCardBody.appendChild(editTextArea);
+        editCardBody.appendChild(generateButtonGroup([
+          {class: "btn-sm btn-outline-secondary", name: "Save", onclick: function() {
+            let title = document.getElementById("input-1-" + i).value;
+            let number = parseInt(document.getElementById("input-2-" + i).value);
+            let intro = document.getElementById("textarea-" + i).value;
+            console.log(title, number, intro);
+
+            document.getElementById("collapse-body" + i).style.display = "block";
+            document.getElementById("collapse-body-edit" + i).style.display = "none";
+          }},
+          {class: "btn-sm btn-outline-secondary", name: "Cancel", onclick: function() {
+            document.getElementById("collapse-body" + i).style.display = "block";
+            document.getElementById("collapse-body-edit" + i).style.display = "none";
+          }}
+        ]));
+
 
         collapse.appendChild(cardBody);
+        collapse.appendChild(editCardBody);
         card.appendChild(collapse);
         accordion.appendChild(card);
       }
 
       return accordion;
+    }
+
+    function generateButtonGroup(data) {
+      let dFlex = document.createElement("div");
+      dFlex.className = "d-flex justify-content-between align-items-center";
+      let btnGroup = document.createElement("div");
+      btnGroup.classList.add("btn-group");
+
+      for(var i = 0; i < data.length; i++) {
+        let btn = document.createElement("button");
+        btn.setAttribute("type", "button");
+        btn.className = "btn " + data[i].class;
+        btn.innerHTML = data[i].name;
+        btn.onclick = data[i].onclick;
+        btnGroup.appendChild(btn);
+      }
+      dFlex.appendChild(btnGroup);
+      return dFlex;
     }
   </script>
 </body>
