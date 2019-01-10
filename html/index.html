@@ -43,11 +43,10 @@
     }
 
     window.onload = function () {
-      makeRequest("GET", "http://54.183.93.210:3001/data", function (res) {
+      makeRequest("GET", "http://54.183.93.210:3001/data", null, function (res) {
         let data = JSON.parse(res.responseText);
         updateState(data);
       }, function(err) {
-        console.log(err);
         let data = {
           categories: [{
             "number": 1,
@@ -92,12 +91,12 @@
     }
 
     function loadDoc() {
-      makeRequest("GET", "http://54.183.93.210:3001/generate", function (res) {
+      makeRequest("GET", "http://54.183.93.210:3001/generate", null, function (res) {
         window.open(res.responseText, "_blank");
       });
     }
 
-    function makeRequest(method, url, success, error) {
+    function makeRequest(method, url, data, success, error) {
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -108,7 +107,8 @@
        }
       };
       xhttp.open(method, url, true);
-      xhttp.send();
+      if (method === "GET") xhttp.send();
+      else xhttp.send(data);
     }
   </script>
 
@@ -137,6 +137,7 @@
         header.className = "mb-0";
         let btn = document.createElement("button");
         btn.className = "btn collapsed";
+        btn.setAttribute("id", "accordion-toggle-" + i);
         btn.setAttribute("data-toggle", "collapse");
         btn.setAttribute("data-target", "#collapse" + i);
         btn.setAttribute("aria-expanded", "false");
@@ -196,6 +197,20 @@
             let number = parseInt(document.getElementById("input-2-" + i).value);
             let intro = document.getElementById("textarea-" + i).value;
             console.log(title, number, intro);
+            makeRequest("POST", "http://54.183.93.210:3001/category", {title, number, intro}, function (res) {
+              let data = JSON.parse(res.responseText);
+              if (state.categories.slice(-1)[0].number === 0) updateState({categories: state.categories.slice(0, -1).concat([data])});
+              else {
+                let newCategories = [];
+                for(var j = 0; j < state.categories.length; j++) {
+                  if (state.categories[j].number === data.number) newCategories.push(data);
+                  else newCategories.push(state.categories[j]);
+                }
+                updateState({categories: newCategories});
+              }
+            }, function(err) {
+              console.log(err);
+            });
 
             document.getElementById("collapse-body" + i).style.display = "block";
             document.getElementById("collapse-body-edit" + i).style.display = "none";
@@ -212,6 +227,18 @@
         card.appendChild(collapse);
         accordion.appendChild(card);
       }
+
+      accordion.appendChild(generateButtonGroup([
+        {class: "btn-sm btn-outline-secondary", name: "New Category", onclick: function() {
+          let index = state.categories.length;
+          state.categories.push({title: "New Category", number: 0, intro: ""});
+          render();
+
+          document.getElementById("accordion-toggle-" + index).click();
+          document.getElementById("collapse-body" + index).style.display = "none";
+          document.getElementById("collapse-body-edit" + index).style.display = "block";
+        }}
+      ]));
 
       return accordion;
     }

@@ -28,6 +28,7 @@ const handleUpdate = function (next) {
   const currentDate = Date.now()
   if (this.getUpdate().$set) this.getUpdate().$set.updated_at = currentDate
   else this.getUpdate().$set = {updated_at: currentDate}
+  this.getUpdate().$setOnInsert = {created_at: currentDate}
   next()
 }
 

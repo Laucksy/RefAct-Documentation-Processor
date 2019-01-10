@@ -3,7 +3,9 @@ import path from 'path'
 import latex from 'node-latex'
 import cfg from './config'
 import {
-  Chapter
+  Category,
+  Task,
+  Paperwork
 } from './db'
 import {
   generateOutputStream,
@@ -33,9 +35,19 @@ index.route('/home').get((req, res) => {
 })
 
 index.route('/data').get(wrap(async (req, res) => {
-  const chapters = await Chapter.find().exec()
+  const categories = await Category.find().exec()
+  const tasks = await Task.find().exec()
+  const paperwork = await Paperwork.find().exec()
 
-  sendResponse(res, {chapters})
+  sendResponse(res, {categories, tasks, paperwork})
+}))
+
+index.route('/category').post(wrap(async (req, res) => {
+  const data = req.body
+
+  Category.findOneAndUpdate({title: data.title}, {$set: data}, {upsert: true, new: true}).exec().then(category => {
+    sendResponse(res, category)
+  })
 }))
 
 index.route('/generate').get(wrap(async (req, res) => {
@@ -45,9 +57,9 @@ index.route('/generate').get(wrap(async (req, res) => {
   const inputFile = 'test.tex'
   const outputFile = 'output.pdf'
 
-  const chapters = await Chapter.find().exec()
+  const categories = await Category.find().exec()
 
-  writeToFile(inputFile, chapters)
+  writeToFile(inputFile, categories)
 
   const pdf = latex(readFromFile(inputFile), {passes: 2})
   pdf.pipe(generateOutputStream(outputFile))
