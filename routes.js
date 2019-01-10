@@ -10,6 +10,7 @@ import {
 import {
   generateOutputStream,
   logError,
+  logger,
   readFromFile,
   sendResponse,
   writeToFile
@@ -19,6 +20,8 @@ const index = express.Router()
 
 const wrap = fn => {
   return (req, res, next) => {
+    logger(0, {method: req.originalUrl, data: req.body})
+    res.set('Access-Control-Allow-Origin', '*')
     Promise.resolve(fn(req, res, next)).catch(next)
   }
 }
@@ -48,6 +51,10 @@ index.route('/category').post(wrap(async (req, res) => {
   Category.findOneAndUpdate({title: data.title}, {$set: data}, {upsert: true, new: true}).exec().then(category => {
     sendResponse(res, category)
   })
+})).options(wrap(async (req, res) => {
+  res.set('Access-Control-Allow-Methods', 'POST')
+  res.set('Access-Control-Allow-Headers', 'accept, content-type')
+  res.set('Access-Control-Max-Age', '1728000')
 }))
 
 index.route('/generate').get(wrap(async (req, res) => {

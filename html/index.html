@@ -107,8 +107,12 @@
        }
       };
       xhttp.open(method, url, true);
+      console.log(method, data);
       if (method === "GET") xhttp.send();
-      else xhttp.send(data);
+      else {
+        xhttp.setRequestHeader("Content-Type", "application/json");
+        xhttp.send(JSON.stringify(data));
+      }
     }
   </script>
 
