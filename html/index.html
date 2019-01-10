@@ -201,16 +201,22 @@
             let number = parseInt(document.getElementById("input-2-" + i).value);
             let intro = document.getElementById("textarea-" + i).value;
             console.log(title, number, intro);
-            makeRequest("POST", "http://54.183.93.210:3001/category", {title, number, intro}, function (res) {
+            makeRequest("POST", "http://54.183.93.210:3001/category", {_id: state.categories[i]._id, title, number, intro}, function (res) {
               let data = JSON.parse(res.responseText);
-              if (state.categories.slice(-1)[0].number === 0) updateState({categories: state.categories.slice(0, -1).concat([data])});
-              else {
+              if (state.categories.slice(-1)[0].number === 0) {
+                updateState({categories: state.categories.slice(0, -1).concat([data])});
+                document.getElementById("accordion-toggle-" + (state.categories.length - 1)).click();
+              } else {
                 let newCategories = [];
+                let index = 0;
                 for(var j = 0; j < state.categories.length; j++) {
-                  if (state.categories[j].number === data.number) newCategories.push(data);
-                  else newCategories.push(state.categories[j]);
+                  if (state.categories[j].number === data.number) {
+                    newCategories.push(data);
+                    index = j;
+                  } else newCategories.push(state.categories[j]);
                 }
                 updateState({categories: newCategories});
+                document.getElementById("accordion-toggle-" + index).click();
               }
             }, function(err) {
               console.log(err);
