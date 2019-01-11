@@ -5,6 +5,8 @@
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/css/bootstrap-select.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.2/js/bootstrap-select.min.js"></script>
 </head>
 
 <body>
@@ -39,7 +41,8 @@
       categories: [],
       tasks: [],
       paperwork: [],
-      active: 'categories'
+      active: 'categories',
+      TIME_PERIODS: []
     }
 
     window.onload = function () {
@@ -87,6 +90,7 @@
       if (data.categories) state.categories = data.categories.sort(function (a, b) { return a.number - b.number });
       if (data.tasks) state.tasks = data.tasks;
       if (data.paperwork) state.paperwork = data.paperwork;
+      if (data.TIME_PERIODS) state.TIME_PERIODS = data.TIME_PERIODS;
       render();
     }
 
@@ -124,11 +128,13 @@
       if (state.active === 'categories') table.appendChild(renderCategories(state.categories));
       else if (state.active === 'tasks') table.appendChild(renderTasks(state.tasks));
       else if (state.active === 'paperwork') table.appendChild(renderPaperwork(state.paperwork));
+
+      $('select').selectpicker();
     }
 
     function renderCategories(categories) {
       return generateAccordion(categories, {
-        heading: function (item) { return "Chapter " + item.number + " - " + item.title; },
+        heading: function (item) { return "Category " + item.number + " - " + item.title; },
         readonly: function (item) { return item.intro; },
         editlayout: function (item) { return [
             {type: "input", value: item.title, width: "33%", id: "input-1-"},
@@ -140,25 +146,9 @@
           let title = document.getElementById("input-1-" + i).value;
           let number = parseInt(document.getElementById("input-2-" + i).value);
           let intro = document.getElementById("textarea-" + i).value;
-          console.log(item._id, title, number, intro);
-          makeRequest("POST", "http://54.183.93.210:3001/category", {_id: item._id, title, number, intro}, function (res) {
-            let dat = JSON.parse(res.responseText);
-            if (categories.slice(-1)[0].number === 0) {
-              updateState({categories: categories.slice(0, -1).concat([dat])});
-              document.getElementById("accordion-toggle-" + (categories.length - 1)).click();
-            } else {
-              let newCategories = [];
-              let index = 0;
-              for(var j = 0; j < categories.length; j++) {
-                if (categories[j].number === dat.number) {
-                  newCategories.push(dat);
-                  index = j;
-                } else newCategories.push(categories[j]);
-              }
-              updateState({categories: newCategories});
-              document.getElementById("accordion-toggle-" + index).click();
-            }
-          }, function(err) {
+          let data = {_id: item._id, title, number, intro};
+          console.log(data);
+          makeRequest("POST", "http://54.183.93.210:3001/data/category", data, saveResponse(categories, "categories"), function(err) {
             console.log(err);
           });
         },
@@ -167,6 +157,76 @@
       });
     }
 
+    function renderTasks(tasks) {
+      return generateAccordion(tasks, {
+        heading: function (item) { console.log(item); return "Task - " + item.title + " - " + (item.category && item.category.title || "No Category"); },
+        readonly: function (item) {
+          let result = "Timeline: " + item.timeline + "<br/>Required: " + item.required;
+          result += "<br/>Pre-Reqs: ";
+          for(var k = 0; k < item.prereqs.length; k++) { result += item.prereqs[k].title + ", "; }
+          result = result.substring(0, result.length - 1);
+          result += "<br/>Paperwork: ";
+          for(var k = 0; k < item.paperwork.length; k++) { result += item.paperwork[k].title + ", "; }
+          result = result.substring(0, result.length - 1);
+          result += "<br/>" + item.description;
+          return result;
+        },
+        editlayout: function (item) { return [
+            {type: "input", value: item.title, width: "30%", id: "input-1-"},
+            {type: "div", width: "10%", display: "inline-block"},
+            {type: "select", multiple: false, options: state.TIME_PERIODS.map(function(p) {return {_id: p, title: p};}), selected: item.timeline, width: "30%", id: "select-4-"},
+            {type: "div", width: "10%", display: "inline-block"},
+            {type: "checkbox", value: item.required, width: "20%", id: "input-3-"},
+            {type: "select", multiple: true, options: state.tasks.map(function (p) {return {_id: p._id, title: p.title};}), selected: item.prereqs, width: "30%", id: "select-1-"},
+            {type: "div", width: "5%", display: "inline-block"},
+            {type: "select", multiple: true, options: state.paperwork.map(function (p) {return {_id: p._id, title: p.title};}), selected: item.paperwork, width: "30%", id: "select-2-"},
+            {type: "div", width: "5%", display: "inline-block"},
+            {type: "select", multiple: false, options: state.categories.map(function (c) {return {_id: c._id, title: c.title};}), selected: item.category._id, width: "30%", id: "select-3-"},
+            {type: "textarea", value: item.description, width: "100%", id: "textarea-"}
+        ]; },
+        save: function (item, i) {
+          let title = document.getElementById("input-1-" + i).value;
+          let timeline = document.getElementById("select-4-" + i).value;
+          let required = document.getElementById("input-3-" + i).checked;
+          let prereqs = Array.from(document.getElementById('select-1-' + i).selectedOptions).map(function(s) {return s.value});
+          let paperwork = Array.from(document.getElementById('select-2-' + i).selectedOptions).map(function(s) {return s.value});
+          let category = document.getElementById('select-3-' + i).value;
+          let description = document.getElementById('textarea-' + i).value;
+          let data = {_id: item._id, title, timeline, required, prereqs, paperwork, category, description};
+          console.log(data);
+          makeRequest("POST", "http://54.183.93.210:3001/data/task", data, saveResponse(tasks, "tasks"), function(err) {
+            console.log(err);
+          });
+        },
+        createText: "New Task",
+        createSchema: {title: "New Task", description: "", prereqs: [], paperwork: [], category: null, timeline: "", required: false}
+      });
+    }
+
+    function saveResponse (data, key) {
+      return function (res) {
+        let dat = JSON.parse(res.responseText);
+        if (data.slice(-1)[0].number === 0) {
+          let updateData = {};
+          updateData[key] = data.slice(0, -1).concat([dat]);
+          updateState(updateData);
+          document.getElementById("accordion-toggle-" + (data.length - 1)).click();
+        } else {
+          let newData = [];
+          let index = 0;
+          for(var j = 0; j < data.length; j++) {
+            if (data[j].number === dat.number) {
+              newData.push(dat);
+              index = j;
+            } else newData.push(data[j]);
+          }
+          let updateData = {};
+          updateData[key] = newData;
+          updateState(updateData);
+          document.getElementById("accordion-toggle-" + index).click();
+        }
+      };
+    }
   </script>
 
   <script type="text/javascript">
@@ -221,13 +281,47 @@
 
         for(var k = 0; k < options.editlayout(data[i]).length; k++) {
           let opts = options.editlayout(data[i])[k];
-          let element = document.createElement(opts.type);
-          if (opts.value) element.value = opts.value;
-          if (opts.width) element.style.width = opts.width;
-          if (opts.display) element.style.display = opts.display;
-          if (opts.id) element.setAttribute("id", opts.id + i);
-          if (opts.type === "textarea") element.rows = "10";
-          editCardBody.appendChild(element);
+          if (opts.type !== "checkbox" && opts.type !== "select") {
+            let element = document.createElement(opts.type);
+            if (opts.type) element.type = opts.type;
+            if (opts.value) element.value = opts.value;
+            if (opts.width) element.style.width = opts.width;
+            if (opts.display) element.style.display = opts.display;
+            if (opts.id) element.setAttribute("id", opts.id + i);
+            if (opts.type === "textarea") element.rows = "10";
+            editCardBody.appendChild(element);
+          } else if (opts.type === "checkbox"){
+            let element = document.createElement("div");
+            element.className = "checkbox";
+            element.style.display = "inline-block";
+            if (opts.width) element.style.width = opts.width;
+
+            let label = document.createElement("label");
+            let input = document.createElement("input");
+            input.type = "checkbox";
+            if (opts.value) input.setAttribute("checked", opts.value);
+            if (opts.id) input.setAttribute("id", opts.id + i);
+            label.appendChild(document.createTextNode("Required:"));
+            label.appendChild(input);
+            element.appendChild(label);
+            editCardBody.appendChild(element);
+          } else {
+            let element = document.createElement("select");
+            if (opts.multiple) element.className = "selectpicker";
+            if (opts.multiple) element.multiple = true;
+            if (opts.multiple) element.setAttribute("data-live-search", "true");
+            if (opts.width) element.style.width = opts.width;
+            if (opts.id) element.setAttribute("id", opts.id + i);
+            opts.options.forEach(function (choice) {
+              let option = document.createElement("option");
+              option.value = choice._id;
+              option.innerHTML = choice.title;
+              if (opts.selected && opts.multiple && opts.selected.indexOf(choice._id) >= 0) option.setAttribute("selected", "true");
+              else if (opts.selected && opts.selected === choice._id) option.setAttribute("selected", "true");
+              element.appendChild(option);
+            })
+            editCardBody.appendChild(element);
+          }
         }
 
         editCardBody.appendChild(generateButtonGroup([

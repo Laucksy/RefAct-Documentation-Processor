@@ -2,6 +2,7 @@ import express from 'express'
 import path from 'path'
 import latex from 'node-latex'
 import cfg from './config'
+import { TIME_PERIODS } from './constants'
 import {
   Category,
   Task,
@@ -39,18 +40,19 @@ index.route('/home').get((req, res) => {
 
 index.route('/data').get(wrap(async (req, res) => {
   const categories = await Category.find().exec()
-  const tasks = await Task.find().exec()
+  const tasks = await Task.find().populate('prereqs', 'title description').populate('paperwork', 'title description').populate('category', 'number title').exec()
   const paperwork = await Paperwork.find().exec()
 
-  sendResponse(res, {categories, tasks, paperwork})
+  sendResponse(res, {categories, tasks, paperwork, TIME_PERIODS})
 }))
 
-index.route('/category').post(wrap(async (req, res) => {
+index.route('/data/:collection').post(wrap(async (req, res) => {
   const data = req.body
   let query = data._id ? {_id: data._id} : {title: data.title}
+  let Collection = req.params.collection === 'category' ? Category : (req.params.collection === 'task' ? Task : Paperwork)
 
-  Category.findOneAndUpdate(query, {$set: data}, {upsert: true, new: true}).exec().then(category => {
-    sendResponse(res, category._doc)
+  Collection.findOneAndUpdate(query, {$set: data}, {upsert: true, new: true}).exec().then(item => {
+    sendResponse(res, item._doc)
   })
 })).options(wrap(async (req, res) => {
   res.set('Access-Control-Allow-Methods', 'POST')
