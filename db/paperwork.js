@@ -29,5 +29,5 @@ paperworkSchema.pre('save', function (next) {
 paperworkSchema.pre('update', handleUpdate)
 paperworkSchema.pre('findOneAndUpdate', handleUpdate)
 
-const Paperwork = mongoose.model('Paperwork', paperworkSchema)
+const Paperwork = mongoose.model('Paperwork', paperworkSchema, 'paperwork')
 export default Paperwork

@@ -181,7 +181,7 @@
             {type: "div", width: "5%", display: "inline-block"},
             {type: "select", multiple: true, options: state.paperwork.map(function (p) {return {_id: p._id, title: p.title};}), selected: item.paperwork, width: "30%", id: "select-2-"},
             {type: "div", width: "5%", display: "inline-block"},
-            {type: "select", multiple: false, options: state.categories.map(function (c) {return {_id: c._id, title: c.title};}), selected: item.category._id, width: "30%", id: "select-3-"},
+            {type: "select", multiple: false, options: state.categories.map(function (c) {return {_id: c._id, title: c.title};}), selected: item.category && item.category._id, width: "30%", id: "select-3-"},
             {type: "textarea", value: item.description, width: "100%", id: "textarea-"}
         ]; },
         save: function (item, i) {
@@ -200,6 +200,31 @@
         },
         createText: "New Task",
         createSchema: {title: "New Task", description: "", prereqs: [], paperwork: [], category: null, timeline: "", required: false}
+      });
+    }
+
+    function renderPaperwork(paperwork) {
+      return generateAccordion(paperwork, {
+        heading: function (item) { console.log(item); return "Paperwork - " + item.title + " - " + (item.category && item.category.title || "No Category"); },
+        readonly: function (item) { return item.description; },
+        editlayout: function (item) { return [
+            {type: "input", value: item.title, width: "30%", id: "input-1-"},
+            {type: "div", width: "40%", display: "inline-block"},
+            {type: "select", multiple: false, options: state.categories.map(function (c) {return {_id: c._id, title: c.title};}), selected: item.category && item.category._id, width: "30%", id: "select-1-"},
+            {type: "textarea", value: item.description, width: "100%", id: "textarea-"}
+        ]; },
+        save: function (item, i) {
+          let title = document.getElementById("input-1-" + i).value;
+          let category = document.getElementById('select-1-' + i).value;
+          let description = document.getElementById('textarea-' + i).value;
+          let data = {_id: item._id, title, category, description};
+          console.log(data);
+          makeRequest("POST", "http://54.183.93.210:3001/data/paperwork", data, saveResponse(paperwork, "paperwork"), function(err) {
+            console.log(err);
+          });
+        },
+        createText: "New Paperwork",
+        createSchema: {title: "New Paperwork", description: "", category: null}
       });
     }
 

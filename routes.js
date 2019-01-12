@@ -58,7 +58,7 @@ index.route('/data/:collection').post(wrap(async (req, res) => {
   res.set('Access-Control-Allow-Methods', 'POST')
   res.set('Access-Control-Allow-Headers', 'accept, content-type')
   res.set('Access-Control-Max-Age', '1728000')
-  res.send(200)
+  res.sendStatus(200)
 }))
 
 index.route('/generate').get(wrap(async (req, res) => {
