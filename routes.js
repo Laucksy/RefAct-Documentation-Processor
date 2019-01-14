@@ -9,6 +9,7 @@ import {
   Paperwork
 } from './db'
 import {
+  generateFullReport,
   generateOutputStream,
   logError,
   logger,
@@ -69,15 +70,14 @@ index.route('/data/:collection').post(wrap(async (req, res) => {
 }))
 
 index.route('/generate').get(wrap(async (req, res) => {
-  // TODO: Pull information from db
-  // TODO: Write information to file
-
   const inputFile = 'test.tex'
   const outputFile = 'output.pdf'
 
   const categories = await Category.find().exec()
+  const tasks = await Task.find().exec()
+  const paperwork = await Paperwork.find().exec()
 
-  writeToFile(inputFile, categories)
+  writeToFile(inputFile, generateFullReport(categories, tasks, paperwork))
 
   const pdf = latex(readFromFile(inputFile), {passes: 2})
   pdf.pipe(generateOutputStream(outputFile))

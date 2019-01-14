@@ -222,7 +222,7 @@
           let newData = [];
           let index = 0;
           for(var j = 0; j < data.length; j++) {
-            if (data[j].number === dat.number) {
+            if (data[j]._id === undefined || data[j]._id === dat._id) {
               newData.push(dat);
               index = j;
             } else newData.push(data[j]);
