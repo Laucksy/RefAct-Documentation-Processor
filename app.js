@@ -38,7 +38,7 @@ app.use((err, req, res, next) => { // eslint-disable-line
 })
 
 server.listen(cfg.server.port, () => {
-  log('Connected to GoPeerAPI')
+  log('Connected to the RefAct Documentation Processor API')
 })
 
 module.exports = app

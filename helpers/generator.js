@@ -9,8 +9,8 @@ export const generateFullReport = (categories, tasks, paperwork) => {
     result += `\\chapter{${category.title}}\n`
     result += formatText(category.intro)
 
-    let tasksForCategory = tasks.filter(t => t.category === category._id)
-    let paperworkForCategory = paperwork.filter(p => p.category === category._id)
+    let tasksForCategory = tasks.filter(t => t.category.toString() === category._id.toString())
+    let paperworkForCategory = paperwork.filter(p => p.category.toString() === category._id.toString())
 
     result += '\\section{Tasks}\n'
     tasksForCategory.forEach(task => {
@@ -32,7 +32,7 @@ export const generateFullReport = (categories, tasks, paperwork) => {
 }
 
 export const formatText = (str) => {
-  let output = str.replace(/<tab>/g, '\\tab').replace(/\n/g, '\\\\\n')
+  let output = str.replace(/<tab>/g, '\\tab ').replace(/\n/g, '\\\\\n')
 
   if (output.indexOf('LIST[[') >= 0) {
     let index = output.indexOf('LIST[[')
