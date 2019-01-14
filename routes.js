@@ -40,8 +40,15 @@ index.route('/home').get((req, res) => {
 
 index.route('/data').get(wrap(async (req, res) => {
   const categories = await Category.find().exec()
-  const tasks = await Task.find().populate('prereqs', 'title description').populate('paperwork', 'title description').populate('category', 'number title').exec()
-  const paperwork = await Paperwork.find().exec()
+  const tasks = await Task.find()
+                            .populate('prereqs', 'title description')
+                            .populate('paperworkRequired', 'title description')
+                            .populate('paperworkReceived', 'title description')
+                            .populate('category', 'number title')
+                            .exec()
+  const paperwork = await Paperwork.find()
+                            .populate('category', 'number title')
+                            .exec()
 
   sendResponse(res, {categories, tasks, paperwork, TIME_PERIODS})
 }))

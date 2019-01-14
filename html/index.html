@@ -50,31 +50,7 @@
         let data = JSON.parse(res.responseText);
         updateState(data);
       }, function(err) {
-        let data = {
-          categories: [{
-            "number": 1,
-            "title": "The Resettlement Agency",
-            "intro": "\t There are 9 major resettlement agencies in the US, with each one having smaller, affiliate organizations that somewhat-independently conduct their own resettlement operations. The agency for the Lehigh Valley is Bethany Christian Services (BCS, which will refer directly to the Lehigh Valley office), which is an affiliate of Lutheran Immigration and Refugee Services (LIRS). Though BCS used to be rather sizable, budget cuts in recent years have reduced the organization to three paid staff, along with a network of volunteers. The three staff members are Marla Sell, the director, Mohammed Obaid, the general case worker, and Mu Kpaw, the employment case worker. The general case worker will be referenced as just the case worker, since they handle everything except for employment. The BCS office is located at the corner of 5th Street and Linden Street in Allentown, in the second floor offices of the Grace Episcopal Church. \n\t Once BCS has notified you (the sponsoring organization) of an arrival, it is up to you to determine if you should decide to spoonsor them. There may be a variety of factors involved, such as the number of people, their ages, the availability of housing, etc. BCS will provide a biodata form that gives basic information about each person in the case, including their name, date of birth, country of nationality, country of origin (which necessarily must be different than country of nationality to be considered a refugee by the UNHCR), notable medical concerns, languages spoken/literate in, education experience, and employment experience. This information is all that you get prior to their arrival, so you must do your best to prepare with it. A lot of things can be acted upon with just this, such as gathering beds/furniture, identifying a culturally appropriate meal for the night of their arrival, and searching (in-group and out) for translators, but other things, such as school enrollment and necessary medical appointments, must wait until their arrival. \n",
-            "sections": [
-              {
-                "title": "Cultural Orientation",
-                "description": "\t After the family has arrived and settled in, they will begin Cultural Orientation through BCS. This is run in the home by two BCS volunteers, a facilitator and a translator, and covers a range of topics, listed below (a more descriptive version can be found in the Appendix): \n LIST[[Role of the Local Resettlement Agency],[Refugee Status], [English], [Public Assistance], [U.S. Laws], [Your New Community], [Employment], [Health], [Budgeting and Personal Finance], [Housing], [Hygiene], [Safety], [Cultural Adjustment], [Education], [Transportation]] \t This Cultural Orientation will talk place over approximately four two hour sessions and concludes with a written exam (in English) aimed at assessing a general understanding of all of the topics. This exam is assisted by the translator and can be taken multiple times until satisfactorily completed, at the discretion of BCS. \n",
-                "subsections": []
-              },
-              {
-                "title": "The Case Worker",
-                "description": "\t The case worker plays a critical role in the resettlement process and should serve as the main point of contact with the resettlement agency, although the director is more than willing and to help and answer questions as needed. The case worker will does the intake paperwork with BCS and facilitate much of the governmental interactions for the family, such as getting the first month of SNAP benefits expedited. The case worker is actively involved until the three month mark, at which they complete a summarizing report and significantly decrease involvement and contact with the family. This can change, however, due to extenuating circumstances and they will continue to answer questions and such after the three month mark. \n",
-                "subsections": []
-              },
-              {
-                "title": "Refugee Social Services",
-                "description": "\t After the case worker is no longer actively associated with the family, they will enter into the resettlement agency's Refugee Social Services program. This program provides them with more infrequent, somewhat-on-demand assistance. Much of this is done through the Episcopal Church of the Mediator in Allentown, which runs the Refugee Center, at which the director of BCS holds \"office hours\" and through which the family can get school uniforms for the kids. \n",
-                "subsections": []
-              }
-            ]
-          }]
-        };
-        updateState(data);
+        updateState({});
       });
     }
 
@@ -111,7 +87,6 @@
        }
       };
       xhttp.open(method, url, true);
-      console.log(method, data);
       if (method === "GET") xhttp.send();
       else {
         xhttp.setRequestHeader("Content-Type", "application/json");
@@ -159,14 +134,17 @@
 
     function renderTasks(tasks) {
       return generateAccordion(tasks, {
-        heading: function (item) { console.log(item); return "Task - " + item.title + " - " + (item.category && item.category.title || "No Category"); },
+        heading: function (item) { return "Task - " + item.title + " - " + (item.category && item.category.title || "No Category"); },
         readonly: function (item) {
           let result = "Timeline: " + item.timeline + "<br/>Required: " + item.required;
           result += "<br/>Pre-Reqs: ";
           for(var k = 0; k < item.prereqs.length; k++) { result += item.prereqs[k].title + ", "; }
           result = result.substring(0, result.length - 1);
-          result += "<br/>Paperwork: ";
-          for(var k = 0; k < item.paperwork.length; k++) { result += item.paperwork[k].title + ", "; }
+          result += "<br/>Paperwork Required: ";
+          for(var k = 0; k < item.paperworkRequired.length; k++) { result += item.paperworkRequired[k].title + ", "; }
+          result = result.substring(0, result.length - 1);
+          result += "<br/>Paperwork Received: ";
+          for(var k = 0; k < item.paperworkReceived.length; k++) { result += item.paperworkReceived[k].title + ", "; }
           result = result.substring(0, result.length - 1);
           result += "<br/>" + item.description;
           return result;
@@ -174,38 +152,42 @@
         editlayout: function (item) { return [
             {type: "input", value: item.title, width: "30%", id: "input-1-"},
             {type: "div", width: "10%", display: "inline-block"},
-            {type: "select", multiple: false, options: state.TIME_PERIODS.map(function(p) {return {_id: p, title: p};}), selected: item.timeline, width: "30%", id: "select-4-"},
+            {type: "select", multiple: false, options: state.TIME_PERIODS.map(function(p) {return {_id: p, title: p};}), selected: item.timeline, width: "30%", id: "select-5-"},
             {type: "div", width: "10%", display: "inline-block"},
             {type: "checkbox", value: item.required, width: "20%", id: "input-3-"},
+            {type: "label", innerHTML: "Pre-Requisites:", width: "20%"},
             {type: "select", multiple: true, options: state.tasks.map(function (p) {return {_id: p._id, title: p.title};}), selected: item.prereqs, width: "30%", id: "select-1-"},
-            {type: "div", width: "5%", display: "inline-block"},
-            {type: "select", multiple: true, options: state.paperwork.map(function (p) {return {_id: p._id, title: p.title};}), selected: item.paperwork, width: "30%", id: "select-2-"},
-            {type: "div", width: "5%", display: "inline-block"},
-            {type: "select", multiple: false, options: state.categories.map(function (c) {return {_id: c._id, title: c.title};}), selected: item.category && item.category._id, width: "30%", id: "select-3-"},
+            {type: "label", innerHTML: "Category:", width: "20%"},
+            {type: "select", multiple: false, options: state.categories.map(function (c) {return {_id: c._id, title: c.title};}), selected: item.category && item.category._id, width: "30%", id: "select-2-"},
+            {type: "label", innerHTML: "Paperwork Required:", width: "20%"},
+            {type: "select", multiple: true, options: state.paperwork.map(function (p) {return {_id: p._id, title: p.title};}), selected: item.paperworkRequired, width: "30%", id: "select-3-"},
+            {type: "label", innerHTML: "Paperwork Received:", width: "20%"},
+            {type: "select", multiple: true, options: state.paperwork.map(function (p) {return {_id: p._id, title: p.title};}), selected: item.paperworkReceived, width: "30%", id: "select-4-"},
             {type: "textarea", value: item.description, width: "100%", id: "textarea-"}
         ]; },
         save: function (item, i) {
           let title = document.getElementById("input-1-" + i).value;
-          let timeline = document.getElementById("select-4-" + i).value;
+          let timeline = document.getElementById("select-5-" + i).value;
           let required = document.getElementById("input-3-" + i).checked;
           let prereqs = Array.from(document.getElementById('select-1-' + i).selectedOptions).map(function(s) {return s.value});
-          let paperwork = Array.from(document.getElementById('select-2-' + i).selectedOptions).map(function(s) {return s.value});
-          let category = document.getElementById('select-3-' + i).value;
+          let category = document.getElementById('select-2-' + i).value;
+          let paperworkRequired = Array.from(document.getElementById('select-3-' + i).selectedOptions).map(function(s) {return s.value});
+          let paperworkReceived = Array.from(document.getElementById('select-4-' + i).selectedOptions).map(function(s) {return s.value});
           let description = document.getElementById('textarea-' + i).value;
-          let data = {_id: item._id, title, timeline, required, prereqs, paperwork, category, description};
+          let data = {_id: item._id, title, timeline, required, prereqs, category, paperworkRequired, paperworkReceived, description};
           console.log(data);
           makeRequest("POST", "http://54.183.93.210:3001/data/task", data, saveResponse(tasks, "tasks"), function(err) {
             console.log(err);
           });
         },
         createText: "New Task",
-        createSchema: {title: "New Task", description: "", prereqs: [], paperwork: [], category: null, timeline: "", required: false}
+        createSchema: {title: "New Task", description: "", prereqs: [], category: null, paperworkRequired: [], paperworkReceived: [], timeline: "", required: false}
       });
     }
 
     function renderPaperwork(paperwork) {
       return generateAccordion(paperwork, {
-        heading: function (item) { console.log(item); return "Paperwork - " + item.title + " - " + (item.category && item.category.title || "No Category"); },
+        heading: function (item) { return "Paperwork - " + item.title + " - " + (item.category && item.category.title || "No Category"); },
         readonly: function (item) { return item.description; },
         editlayout: function (item) { return [
             {type: "input", value: item.title, width: "30%", id: "input-1-"},
@@ -313,6 +295,7 @@
             if (opts.width) element.style.width = opts.width;
             if (opts.display) element.style.display = opts.display;
             if (opts.id) element.setAttribute("id", opts.id + i);
+            if (opts.innerHTML) element.innerHTML = opts.innerHTML;
             if (opts.type === "textarea") element.rows = "10";
             editCardBody.appendChild(element);
           } else if (opts.type === "checkbox"){
