@@ -1,4 +1,4 @@
-import { REPORT_HEADER, FOOTER, TIME_PERIODS } from '../constants'
+import { REPORT_HEADER, REPORT_FOOTER, TIMELINE_HEADER, TIMELINE_FOOTER, TIME_PERIODS } from '../constants'
 
 export const generateFullReport = (categories, tasks, paperwork) => {
   let result = ''
@@ -46,7 +46,61 @@ export const generateFullReport = (categories, tasks, paperwork) => {
     result += '\n'
   })
 
-  result += FOOTER
+  result += REPORT_FOOTER
+  return result
+}
+
+export const generateTimeline = (categories, tasks, paperwork) => {
+  let result = ''
+
+  result += TIMELINE_HEADER + '\n'
+
+  /*
+      % Place nodes
+      \node [block] (init) {initialize model};
+      \node [cloud, left of=init] (expert) {expert};
+      \node [cloud, right of=init] (system) {system};
+      \node [block, below of=init] (identify) {identify candidate models};
+      \node [block, below of=identify] (evaluate) {evaluate candidate models};
+      \node [block, left of=evaluate, node distance=3cm] (update) {update model};
+      \node [decision, below of=evaluate] (decide) {is best candidate better?};
+      \node [block, below of=decide, node distance=3cm] (stop) {stop};
+      % Draw edges
+      \path [line] (init) -- (identify);
+      \path [line] (identify) -- (evaluate);
+      \path [line] (evaluate) -- (decide);
+      \path [line] (decide) -| node [near start] {yes} (update);
+      \path [line] (update) |- (identify);
+      \path [line] (decide) -- node {no}(stop);
+      \path [line,dashed] (expert) -- (init);
+      \path [line,dashed] (system) -- (init);
+      \path [line,dashed] (system) |- (evaluate);
+   */
+
+  let queue = tasks.map(t => t)
+  let done = []
+  while (queue.length > 0) {
+    let ready = queue.filter(t => t.prereqs.filter(p => done.indexOf(p) < 0).length === 0)
+
+    let head = ready.shift()
+    result += `\\node [block${done.length === 0 ? '' : ', below of=' + done[done.length - 1]._id.toString()}] (${head._id.toString()}) {${head.title}};\n`
+    head.prereqs.forEach(p => {
+      result += `\\path [line] (${p._id.toString()}) -- (${head._id.toString()});\n`
+    })
+
+    ready.forEach(r => {
+      result += `\\node [block, right of=${head._id.toString()}] (${r._id.toString}) {${r.title}};\n`
+      r.prereqs.forEach(p => {
+        result += `\\path [line] (${p._id.toString()}) -- (${r._id.toString()});\n`
+      })
+    })
+
+    done.push(head)
+    done = done.concat(ready)
+    queue = queue.filter(q => q._id.toString() !== head._id.toString() && !ready.some(r => r._id.toString() === q._id.toString()))
+  }
+
+  result += TIMELINE_FOOTER
   return result
 }
 

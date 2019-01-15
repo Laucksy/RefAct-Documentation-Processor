@@ -18,4 +18,23 @@ export const REPORT_HEADER = `\\documentclass{report}
 \\tableofcontents
 \\newpage`
 
-export const FOOTER = '\\end{document}'
+export const REPORT_FOOTER = '\\end{document}'
+
+// \\tikzstyle{line} = [draw, -latex']
+export const TIMELINE_HEADER = `\\documentclass{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{tikz}
+\\usetikzlibrary{shapes,arrows}
+\\begin{document}
+\\pagestyle{empty}
+
+% Define block styles
+\\tikzstyle{decision} = [diamond, draw, fill=blue!20, text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+\\tikzstyle{block} = [rectangle, draw, fill=blue!20, text width=5em, text centered, rounded corners, minimum height=4em]
+
+\\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm, minimum height=2em]
+
+\\begin{tikzpicture}[node distance = 2cm, auto]`
+
+export const TIMELINE_FOOTER = `\\end{tikzpicture}
+\\end{document}`
