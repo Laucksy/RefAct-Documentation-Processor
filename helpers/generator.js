@@ -1,4 +1,4 @@
-import { REPORT_HEADER, FOOTER } from '../constants'
+import { REPORT_HEADER, FOOTER, TIME_PERIODS } from '../constants'
 
 export const generateFullReport = (categories, tasks, paperwork) => {
   let result = ''
@@ -9,19 +9,25 @@ export const generateFullReport = (categories, tasks, paperwork) => {
     result += `\\chapter{${category.title}}\n`
     result += formatText(category.intro)
 
-    let tasksForCategory = tasks.filter(t => t.category.toString() === category._id.toString())
-    let paperworkForCategory = paperwork.filter(p => p.category.toString() === category._id.toString())
+    let tasksForCategory = tasks.filter(t => t.category._id.toString() === category._id.toString())
+    let paperworkForCategory = paperwork.filter(p => p.category._id.toString() === category._id.toString())
 
     result += '\\section{Tasks}\n'
-    tasksForCategory.forEach(task => {
-      result += `\\subsection{${task.title}}\n`
-      result += formatText(task.description)
+    TIME_PERIODS.forEach(period => {
+      let tasksForTimePeriod = tasksForCategory.filter(t => t.timeline === period)
+      if (tasksForTimePeriod.length > 0) result += `\\subsection{${period}}\n`
+      tasksForTimePeriod.forEach(task => {
+        result += `\\paragraph{${task.title + (task.required ? '' : ' (Optional)')}}\n`
+        result += formatText(task.description + '\n') + '\n'
+        result += 'Pre-Requisites:' + (task.prereqs.length ? task.prereqs.map(p => ` ${p.title} (${categories.find(c => c._id.toString() === p.category.toString()).title})`) : ' None')
+        result += formatText('\n')
+      })
     })
 
     result += '\\section{Paperwork}\n'
     paperworkForCategory.forEach(paperwork => {
-      result += `\\subsection{${paperwork.title}}\n`
-      result += formatText(paperwork.description)
+      result += `\\paragraph{${paperwork.title}}\n`
+      result += formatText(paperwork.description + '\n') + '\n'
     })
 
     result += '\n'

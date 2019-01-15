@@ -74,8 +74,15 @@ index.route('/generate').get(wrap(async (req, res) => {
   const outputFile = 'output.pdf'
 
   const categories = await Category.find().exec()
-  const tasks = await Task.find().exec()
-  const paperwork = await Paperwork.find().exec()
+  const tasks = await Task.find()
+                            .populate('prereqs', 'title description category')
+                            .populate('paperworkRequired', 'title description')
+                            .populate('paperworkReceived', 'title description')
+                            .populate('category', 'number title')
+                            .exec()
+  const paperwork = await Paperwork.find()
+                            .populate('category', 'number title')
+                            .exec()
 
   writeToFile(inputFile, generateFullReport(categories, tasks, paperwork))
 
