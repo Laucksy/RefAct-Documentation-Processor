@@ -17,9 +17,22 @@ export const generateFullReport = (categories, tasks, paperwork) => {
       let tasksForTimePeriod = tasksForCategory.filter(t => t.timeline === period)
       if (tasksForTimePeriod.length > 0) result += `\\subsection{${period}}\n`
       tasksForTimePeriod.forEach(task => {
-        result += `\\paragraph{${task.title + (task.required ? '' : ' (Optional)')}}\n`
+        result += `\\paragraph{${task.title + (task.required ? '' : ' (Optional)')}}\n\\noindent\n`
         result += formatText(task.description + '\n') + '\n'
-        result += 'Pre-Requisites:' + (task.prereqs.length ? task.prereqs.map(p => ` ${p.title} (${categories.find(c => c._id.toString() === p.category.toString()).title})`) : ' None')
+
+        result += formatText('<tab>') + 'Pre-Requisites:' + (task.prereqs.length
+          ? task.prereqs.map(p => ` ${p.title} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
+          : ' None')
+        result += formatText('\n')
+
+        result += formatText('<tab>') + 'Paperwork Required:' + (task.paperworkRequired.length
+          ? task.paperworkRequired.map(p => ` ${p.title} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
+          : ' None')
+        result += formatText('\n')
+
+        result += formatText('<tab>') + 'Paperwork Received:' + (task.paperworkReceived.length
+          ? task.paperworkReceived.map(p => ` ${p.title} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
+          : ' None')
         result += formatText('\n')
       })
     })
