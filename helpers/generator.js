@@ -94,32 +94,15 @@ export const generateTimeline = (tasks) => {
     let middleAboveID = index > 0 && getMiddleOfLayer(layers[index - 1]) ? getMiddleOfLayer(layers[index - 1])._id.toString() : `coordinate-${index - 1}`
 
     if (middle) {
-      result += `\\node [block${index === 0 ? '' : ', below of=' + middleAboveID}] (${middleID}) {${middle.title}};\n`
+      result += `\\node [block${index === 0 ? '' : ', below=1cm of ' + middleAboveID}] (${middleID}) {${taskToNode(middle)}};\n`
       middle.prereqs.forEach(p => {
-        result += `\\draw [line] (${p._id.toString()}) -- (${middleID});\n`
+        result += `\\draw [line] (${p._id.toString()}.south) -- (${middleID}.north);\n`
       })
-    } else result += `\\coordinate[${index === 0 ? '' : ', below of=' + middleAboveID}] (${middleID});\n`
+    } else result += `\\coordinate[${index === 0 ? '' : ', below=1cm of ' + middleAboveID}] (${middleID});\n`
 
     result += addToSide(middleID, left, 'left')
     result += addToSide(middleID, right, 'right')
   })
-
-  /* let head = ready.shift()
-  result += `\\node [block${done.length === 0 ? '' : ', below of=' + done[done.length - 1]._id.toString()}] (${head._id.toString()}) {${head.title}};\n`
-  head.prereqs.forEach(p => {
-    result += `\\draw [line] (${p._id.toString()}) -- (${head._id.toString()});\n`
-  })
-
-  let prev = head._id.toString()
-  ready.forEach(r => {
-    result += `\\node [block, right of=${prev}] (${r._id.toString()}) {${r.title}};\n`
-    r.prereqs.forEach(p => {
-      result += `\\draw [line] (${p._id.toString()}) -- (${r._id.toString()});\n`
-    })
-    prev = r._id.toString()
-  })
-
-  done.push(head) */
 
   result += TIMELINE_FOOTER
   return result
@@ -154,11 +137,17 @@ const addToSide = (middleID, arr, side) => {
   let prev = middleID
   while (arr.length > 0) {
     let cur = side === 'left' ? arr.pop() : arr.shift()
-    result += `\\node [block, ${side} of=${prev}] (${cur._id.toString()}) {${cur.title}};\n`
+    result += `\\node [block, ${side}=1cm of ${prev}] (${cur._id.toString()}) {${taskToNode(cur)}};\n`
     cur.prereqs.forEach(p => {
-      result += `\\draw [line] (${p._id.toString()}) -- (${cur._id.toString()});\n`
+      result += `\\draw [line] (${p._id.toString()}.south) -- (${cur._id.toString()}.north);\n`
     })
     prev = cur._id.toString()
   }
   return result
+}
+
+const taskToNode = (task) => {
+  return formatText(task.title +
+    '\nPaperwork Required:' + task.paperworkRequired.map(p => ' ' + p.title) +
+    '\nPaperwork Received:' + task.paperworkReceived.map(p => ' ' + p.title))
 }
