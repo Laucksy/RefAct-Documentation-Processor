@@ -80,7 +80,7 @@ export const generateTimeline = (categories, tasks, paperwork) => {
   let queue = tasks.map(t => t)
   let done = []
   while (queue.length > 0) {
-    let ready = queue.filter(t => t.prereqs.filter(p => done.indexOf(p) < 0).length === 0)
+    let ready = queue.filter(t => t.prereqs.filter(p => queue.map(q => q.title).indexOf(p.title) >= 0).length === 0)
 
     let head = ready.shift()
     result += `\\node [block${done.length === 0 ? '' : ', below of=' + done[done.length - 1]._id.toString()}] (${head._id.toString()}) {${head.title}};\n`
@@ -88,11 +88,13 @@ export const generateTimeline = (categories, tasks, paperwork) => {
       result += `\\path [line] (${p._id.toString()}) -- (${head._id.toString()});\n`
     })
 
+    let prev = head._id.toString()
     ready.forEach(r => {
-      result += `\\node [block, right of=${head._id.toString()}] (${r._id.toString}) {${r.title}};\n`
+      result += `\\node [block, right of=${prev}] (${r._id.toString()}) {${r.title}};\n`
       r.prereqs.forEach(p => {
         result += `\\path [line] (${p._id.toString()}) -- (${r._id.toString()});\n`
       })
+      prev = r._id.toString()
     })
 
     done.push(head)

@@ -85,14 +85,18 @@ index.route('/generate').get(wrap(async (req, res) => {
                             .populate('category', 'number title')
                             .exec()
 
-  // writeToFile(inputFile, generateFullReport(categories, tasks, paperwork))
-  writeToFile(inputFile, generateTimeline(categories, tasks, paperwork))
+  try {
+    // writeToFile(inputFile, generateFullReport(categories, tasks, paperwork))
+    writeToFile(inputFile, generateTimeline(categories, tasks, paperwork))
 
-  const pdf = latex(readFromFile(inputFile), {passes: 2})
-  pdf.pipe(generateOutputStream(outputFile))
+    const pdf = latex(readFromFile(inputFile), {passes: 2})
+    pdf.pipe(generateOutputStream(outputFile))
 
-  pdf.on('error', err => logError(err))
-  pdf.on('finish', () => sendResponse(res, `http://54.183.93.210:3001/${outputFile}`))
+    pdf.on('error', err => logError(err))
+    pdf.on('finish', () => sendResponse(res, `http://54.183.93.210:3001/${outputFile}`))
+  } catch (e) {
+    logError(e)
+  }
 }))
 
 export default { index }
