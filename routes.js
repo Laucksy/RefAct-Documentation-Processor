@@ -70,7 +70,8 @@ index.route('/data/:collection').post(wrap(async (req, res) => {
   res.sendStatus(200)
 }))
 
-index.route('/generate').get(wrap(async (req, res) => {
+index.route('/generate/:type').get(wrap(async (req, res) => {
+  const type = req.params.type || 'timeline'
   const inputFile = 'test.tex'
   const outputFile = 'output.pdf'
 
@@ -86,8 +87,8 @@ index.route('/generate').get(wrap(async (req, res) => {
                             .exec()
 
   try {
-    // writeToFile(inputFile, generateFullReport(categories, tasks, paperwork))
-    writeToFile(inputFile, generateTimeline(categories, tasks, paperwork))
+    if (type === 'report') writeToFile(inputFile, generateFullReport(categories, tasks, paperwork))
+    else if (type === 'timeline') writeToFile(inputFile, generateTimeline(tasks))
 
     const pdf = latex(readFromFile(inputFile), {passes: 2})
     pdf.pipe(generateOutputStream(outputFile))

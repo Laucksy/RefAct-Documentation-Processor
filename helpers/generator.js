@@ -50,7 +50,7 @@ export const generateFullReport = (categories, tasks, paperwork) => {
   return result
 }
 
-export const generateTimeline = (categories, tasks, paperwork) => {
+export const generateTimeline = (tasks) => {
   let result = ''
 
   result += TIMELINE_HEADER + '\n'
@@ -78,29 +78,44 @@ export const generateTimeline = (categories, tasks, paperwork) => {
    */
 
   let queue = tasks.map(t => t)
-  let done = []
+  let layers = []
   while (queue.length > 0) {
     let ready = queue.filter(t => t.prereqs.filter(p => queue.map(q => q.title).indexOf(p.title) >= 0).length === 0)
-
-    let head = ready.shift()
-    result += `\\node [block${done.length === 0 ? '' : ', below of=' + done[done.length - 1]._id.toString()}] (${head._id.toString()}) {${head.title}};\n`
-    head.prereqs.forEach(p => {
-      result += `\\path [line] (${p._id.toString()}) -- (${head._id.toString()});\n`
-    })
-
-    let prev = head._id.toString()
-    ready.forEach(r => {
-      result += `\\node [block, right of=${prev}] (${r._id.toString()}) {${r.title}};\n`
-      r.prereqs.forEach(p => {
-        result += `\\path [line] (${p._id.toString()}) -- (${r._id.toString()});\n`
-      })
-      prev = r._id.toString()
-    })
-
-    done.push(head)
-    done = done.concat(ready)
-    queue = queue.filter(q => q._id.toString() !== head._id.toString() && !ready.some(r => r._id.toString() === q._id.toString()))
+    layers.push(ready)
+    queue = queue.filter(q => !ready.some(r => r._id.toString() === q._id.toString()))
   }
+
+  layers.forEach((layer, index) => {
+    let left = layer.slice(0, Math.floor(layer.length / 2))
+    let right = layer.slice(Math.floor((layer.length + 1) / 2))
+    let middle = getMiddleOfLayer(layer)
+
+    let middleID = middle ? middle._id.toString() : `coordinate-${index}`
+    let middleAboveID = getMiddleOfLayer(layers[index - 1]) ? getMiddleOfLayer(layers[index - 1])._id.toString() : `coordinate-${index - 1}`
+
+    if (middle) result += `\\node [block${index === 0 ? '' : ', below of=' + middleAboveID}] (${middleID}) {${middle.title}};\n`
+    else result += `\\coordinate[${index === 0 ? '' : ', below of=' + middleAboveID}] (${middleID});\n`
+
+    result += addToSide(middleID, left, arr => arr.pop())
+    result += addToSide(middleID, right, arr => arr.shift())
+  })
+
+  /* let head = ready.shift()
+  result += `\\node [block${done.length === 0 ? '' : ', below of=' + done[done.length - 1]._id.toString()}] (${head._id.toString()}) {${head.title}};\n`
+  head.prereqs.forEach(p => {
+    result += `\\draw [line] (${p._id.toString()}) -- (${head._id.toString()});\n`
+  })
+
+  let prev = head._id.toString()
+  ready.forEach(r => {
+    result += `\\node [block, right of=${prev}] (${r._id.toString()}) {${r.title}};\n`
+    r.prereqs.forEach(p => {
+      result += `\\draw [line] (${p._id.toString()}) -- (${r._id.toString()});\n`
+    })
+    prev = r._id.toString()
+  })
+
+  done.push(head) */
 
   result += TIMELINE_FOOTER
   return result
@@ -126,4 +141,20 @@ export const formatText = (str) => {
   }
 
   return output
+}
+
+const getMiddleOfLayer = (layer) => layer.length % 2 === 1 ? layer[(layer.length - 1) / 2] : undefined
+
+const addToSide = (middleID, arr, operation) => {
+  let result = ''
+  let prev = middleID
+  while (arr.length > 0) {
+    let cur = operation(arr)
+    result += `\\node [block, right of=${prev}] (${cur._id.toString()}) {${cur.title}};\n`
+    cur.prereqs.forEach(p => {
+      result += `\\draw [line] (${p._id.toString()}) -- (${cur._id.toString()});\n`
+    })
+    prev = cur._id.toString()
+  }
+  return result
 }
