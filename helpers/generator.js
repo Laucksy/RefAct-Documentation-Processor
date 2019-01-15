@@ -17,7 +17,7 @@ export const generateFullReport = (categories, tasks, paperwork) => {
       let tasksForTimePeriod = tasksForCategory.filter(t => t.timeline === period)
       if (tasksForTimePeriod.length > 0) result += `\\subsection{${period}}\n`
       tasksForTimePeriod.forEach(task => {
-        result += `\\paragraph{${task.title + (task.required ? '' : ' (Optional)')}}\n\\noindent\n`
+        result += `\\paragraph{${task.title + (task.required ? '' : ' (Optional)')}}\n`
         result += formatText(task.description + '\n') + '\n'
 
         result += formatText('<tab>') + 'Pre-Requisites:' + (task.prereqs.length
