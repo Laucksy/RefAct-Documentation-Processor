@@ -91,13 +91,17 @@ export const generateTimeline = (tasks) => {
     let middle = getMiddleOfLayer(layer)
 
     let middleID = middle ? middle._id.toString() : `coordinate-${index}`
-    let middleAboveID = getMiddleOfLayer(layers[index - 1]) ? getMiddleOfLayer(layers[index - 1])._id.toString() : `coordinate-${index - 1}`
+    let middleAboveID = index > 0 && getMiddleOfLayer(layers[index - 1]) ? getMiddleOfLayer(layers[index - 1])._id.toString() : `coordinate-${index - 1}`
 
-    if (middle) result += `\\node [block${index === 0 ? '' : ', below of=' + middleAboveID}] (${middleID}) {${middle.title}};\n`
-    else result += `\\coordinate[${index === 0 ? '' : ', below of=' + middleAboveID}] (${middleID});\n`
+    if (middle) {
+      result += `\\node [block${index === 0 ? '' : ', below of=' + middleAboveID}] (${middleID}) {${middle.title}};\n`
+      middle.prereqs.forEach(p => {
+        result += `\\draw [line] (${p._id.toString()}) -- (${middleID});\n`
+      })
+    } else result += `\\coordinate[${index === 0 ? '' : ', below of=' + middleAboveID}] (${middleID});\n`
 
-    result += addToSide(middleID, left, arr => arr.pop())
-    result += addToSide(middleID, right, arr => arr.shift())
+    result += addToSide(middleID, left, 'left')
+    result += addToSide(middleID, right, 'right')
   })
 
   /* let head = ready.shift()
@@ -145,12 +149,12 @@ export const formatText = (str) => {
 
 const getMiddleOfLayer = (layer) => layer.length % 2 === 1 ? layer[(layer.length - 1) / 2] : undefined
 
-const addToSide = (middleID, arr, operation) => {
+const addToSide = (middleID, arr, side) => {
   let result = ''
   let prev = middleID
   while (arr.length > 0) {
-    let cur = operation(arr)
-    result += `\\node [block, right of=${prev}] (${cur._id.toString()}) {${cur.title}};\n`
+    let cur = side === 'left' ? arr.pop() : arr.shift()
+    result += `\\node [block, ${side} of=${prev}] (${cur._id.toString()}) {${cur.title}};\n`
     cur.prereqs.forEach(p => {
       result += `\\draw [line] (${p._id.toString()}) -- (${cur._id.toString()});\n`
     })

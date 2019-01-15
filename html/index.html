@@ -71,7 +71,7 @@
     }
 
     function loadDoc() {
-      makeRequest("GET", "http://54.183.93.210:3001/generate", null, function (res) {
+      makeRequest("GET", "http://54.183.93.210:3001/generate/timeline", null, function (res) {
         window.open(res.responseText, "_blank");
       });
     }
