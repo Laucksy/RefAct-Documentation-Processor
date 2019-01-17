@@ -20,6 +20,12 @@
       <h1 class="jumbotron-heading">Welcome to the RefAct Documentation Processor!</h1>
       <p class="lead text-muted">This is a tool for automatically generating reports about the resettlement process based upon a database of information. This tool also allows for easy editing of that database to make editing the reports easy.</p>
       <p>
+      <div class="text-center">
+        <div class="btn-group">
+          <a href="#" id="btnRep" class="btn btn-secondary" onclick="handleClick('report')">Full Report</a>
+          <a href="#" id="btnTim" class="btn btn-light" onclick="handleClick('timeline')">Timeline</a>
+        </div>
+      </div>
       <a href="#" class="btn btn-primary my-2" onclick="loadDoc()">Click here to generate the report.</a>
       </p>
     </div>
@@ -42,6 +48,7 @@
       tasks: [],
       paperwork: [],
       active: 'categories',
+      docType: 'report',
       TIME_PERIODS: []
     }
 
@@ -55,11 +62,17 @@
     }
 
     function handleClick(tab) {
-      state.active = tab;
-      document.getElementById("btnCat").className = "btn" + (tab === "categories" ? " btn-secondary" : " btn-light");
-      document.getElementById("btnTas").className = "btn" + (tab === "tasks" ? " btn-secondary" : " btn-light");
-      document.getElementById("btnPap").className = "btn" + (tab === "paperwork" ? " btn-secondary" : " btn-light");
-      render();
+      if (["categories", "tasks", "paperwork"].indexOf(tab) >= 0) {
+        state.active = tab;
+        document.getElementById("btnCat").className = "btn" + (tab === "categories" ? " btn-secondary" : " btn-light");
+        document.getElementById("btnTas").className = "btn" + (tab === "tasks" ? " btn-secondary" : " btn-light");
+        document.getElementById("btnPap").className = "btn" + (tab === "paperwork" ? " btn-secondary" : " btn-light");
+        render();
+      } else {
+        state.docType = tab;
+        document.getElementById("btnRep").className = "btn" + (tab === "report" ? " btn-secondary" : " btn-light");
+        document.getElementById("btnTim").className = "btn" + (tab === "timeline" ? " btn-secondary" : " btn-light");
+      }
     }
 
     function updateState(data) {
@@ -71,7 +84,7 @@
     }
 
     function loadDoc() {
-      makeRequest("GET", "http://54.183.93.210:3001/generate/timeline", null, function (res) {
+      makeRequest("GET", "http://54.183.93.210:3001/generate/" + state.docType, null, function (res) {
         window.open(res.responseText, "_blank");
       });
     }
@@ -324,7 +337,7 @@
               let option = document.createElement("option");
               option.value = choice._id;
               option.innerHTML = choice.title;
-              if (opts.selected && opts.multiple && opts.selected.indexOf(choice._id) >= 0) option.setAttribute("selected", "true");
+              if (opts.selected && opts.multiple && opts.selected.map(o => o._id.toString()).indexOf(choice._id.toString()) >= 0) option.setAttribute("selected", "true");
               else if (opts.selected && opts.selected === choice._id) option.setAttribute("selected", "true");
               element.appendChild(option);
             })

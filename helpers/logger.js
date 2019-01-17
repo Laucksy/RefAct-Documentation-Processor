@@ -62,5 +62,5 @@ export const log = (message, method = null) => {
 }
 
 export const logError = (err, method = null) => {
-  logger(3, {method: method, error: typeof err === 'string' ? err : err.message})
+  logger(3, {method: method, error: typeof err === 'string' ? err : err.stack})
 }
