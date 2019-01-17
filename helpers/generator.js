@@ -60,14 +60,18 @@ export const generateTimeline = (tasks) => {
   TIME_PERIODS.forEach(period => {
     let relevantTasks = tasks.filter(t => t.timeline === period)
     relevantTasks = relevantTasks.concat(tasks.filter(t => {
-      return t.timeline !== period && relevantTasks.some(a => a.prereqs.map(p => p._id.toString()).indexOf(t._id.toString()))
+      return t.timeline !== period && relevantTasks.some(a => {
+        return a.prereqs.map(p => p._id.toString()).indexOf(t._id.toString()) >= 0
+      })
     }))
 
-    result += `\\section*${period}\n`
-    result += '\\begin{tikzpicture}[node distance = 2cm, auto]\n'
-    result += generatePartialTimeline(relevantTasks)
-    result += '\\end{tikzpicture}\n'
-    result += '\n\\newpage\n'
+    if (relevantTasks.length > 0) {
+      result += `\\section*{${period}}\n`
+      result += '\\begin{tikzpicture}[node distance = 2cm, auto]\n'
+      result += generatePartialTimeline(relevantTasks)
+      result += '\\end{tikzpicture}\n'
+      result += '\n\\newpage\n'
+    }
   })
 
   result += TIMELINE_FOOTER
@@ -98,6 +102,11 @@ export const formatText = (str) => {
 
 const generatePartialTimeline = (tasks) => {
   let result = ''
+
+  tasks = tasks.map(t => {
+    return {...t, prereqs: t.prereqs.filter(p => tasks.some(a => a.title === p.title))}
+  })
+
   let queue = tasks.map(t => t)
   let layers = []
   while (queue.length > 0) {

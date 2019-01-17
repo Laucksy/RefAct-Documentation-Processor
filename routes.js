@@ -75,16 +75,16 @@ index.route('/generate/:type').get(wrap(async (req, res) => {
   const inputFile = 'test.tex'
   const outputFile = 'output.pdf'
 
-  const categories = await Category.find().exec()
+  const categories = await Category.find().lean().exec()
   const tasks = await Task.find()
                             .populate('prereqs', 'title description category')
                             .populate({path: 'paperworkRequired', model: 'Paperwork', select: 'title description category'})
                             .populate({path: 'paperworkReceived', model: 'Paperwork', select: 'title description category'})
                             .populate('category', 'number title')
-                            .exec()
+                            .lean().exec()
   const paperwork = await Paperwork.find()
                             .populate('category', 'number title')
-                            .exec()
+                            .lean().exec()
 
   try {
     if (type === 'report') writeToFile(inputFile, generateFullReport(categories, tasks, paperwork))
