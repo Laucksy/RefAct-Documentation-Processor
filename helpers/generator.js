@@ -68,7 +68,7 @@ export const generateTimeline = (tasks) => {
     if (relevantTasks.length > 0) {
       result += `\\section*{${period}}\n`
       result += '\\begin{tikzpicture}[node distance = 2cm, auto]\n'
-      result += generatePartialTimeline(relevantTasks)
+      result += generatePartialTimeline(relevantTasks, period)
       result += '\\end{tikzpicture}\n'
       result += '\n\\newpage\n'
     }
@@ -100,7 +100,7 @@ export const formatText = (str) => {
   return output
 }
 
-const generatePartialTimeline = (tasks) => {
+const generatePartialTimeline = (tasks, period) => {
   let result = ''
 
   tasks = tasks.map(t => {
@@ -125,19 +125,19 @@ const generatePartialTimeline = (tasks) => {
 
     let nextLayerDirec = (TIMELINE_ORIENTATION === 'portrait' ? 'below' : 'right')
     if (middle) {
-      result += `\\node [block${index === 0 ? '' : ', ' + nextLayerDirec + '=1cm of ' + middleAboveID}] (${middleID}) {${taskToNode(middle)}};\n`
+      result += addNode(middle, middleAboveID, index === 0 ? null : nextLayerDirec, period)
       result += addEdges(middle)
     } else result += `\\coordinate[${index === 0 ? '' : ', ' + nextLayerDirec + '=3cm of ' + middleAboveID}] (${middleID});\n`
 
-    result += addToSide(middleID, left, 'left')
-    result += addToSide(middleID, right, 'right')
+    result += addToSide(middleID, left, 'left', period)
+    result += addToSide(middleID, right, 'right', period)
   })
   return result
 }
 
 const getMiddleOfLayer = (layer) => layer.length % 2 === 1 ? layer[(layer.length - 1) / 2] : undefined
 
-const addToSide = (middleID, arr, side) => {
+const addToSide = (middleID, arr, side, period) => {
   let result = ''
   let prev = middleID
   if (TIMELINE_ORIENTATION !== 'portrait' && side === 'left') side = 'above'
@@ -146,11 +146,19 @@ const addToSide = (middleID, arr, side) => {
   while (arr.length > 0) {
     let cur = side === 'left' || side === 'above' ? arr.pop() : arr.shift()
 
-    result += `\\node [block, ${side}=1cm of ${prev}] (${cur._id.toString()}) {${taskToNode(cur)}};\n`
+    result += addNode(cur, prev, side, period)
     result += addEdges(cur)
     prev = cur._id.toString()
   }
   return result
+}
+
+const addNode = (task, prev, direction, period) => {
+  let color
+  if (task.timeline !== period) color = '{rgb:black,1;white,2}'
+  else if (!task.required) color = '{rgb:yellow,1;white,2}'
+
+  return `\\node [block${direction ? ', ' + direction + '=1cm of ' + prev : ''}${color ? ', fill=' + color : ''}] (${task._id.toString()}) {${taskToNode(task)}};\n`
 }
 
 const addEdges = (node) => {
