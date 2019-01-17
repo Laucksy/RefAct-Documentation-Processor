@@ -337,7 +337,7 @@
               let option = document.createElement("option");
               option.value = choice._id;
               option.innerHTML = choice.title;
-              if (opts.selected && opts.multiple && opts.selected.map(o => o._id.toString()).indexOf(choice._id.toString()) >= 0) option.setAttribute("selected", "true");
+              if (opts.selected && opts.multiple && opts.selected.map(o => o._id.toString()).indexOf(choice._id && choice._id.toString()) >= 0) option.setAttribute("selected", "true");
               else if (opts.selected && opts.selected === choice._id) option.setAttribute("selected", "true");
               element.appendChild(option);
             })
