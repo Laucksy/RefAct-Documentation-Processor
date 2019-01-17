@@ -36,9 +36,7 @@ export const TIMELINE_HEADER = `\\documentclass{article}
 \\tikzstyle{line} = [thick,->,>=stealth]
 \\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm, minimum height=2em]
 
-\\begin{center}
-\\begin{tikzpicture}[node distance = 2cm, auto]`
+\\begin{center}`
 
-export const TIMELINE_FOOTER = `\\end{tikzpicture}
-\\end{center}
+export const TIMELINE_FOOTER = `\\end{center}
 \\end{document}`

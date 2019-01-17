@@ -58,9 +58,15 @@ export const generateTimeline = (tasks) => {
   result += TIMELINE_HEADER + '\n'
 
   TIME_PERIODS.forEach(period => {
-    let relevantTasks = tasks.filter(t => t.timeline === period || t.prereqs.some(p => tasks.find(a => a.title === p.title).timeline === period))
+    let relevantTasks = tasks.filter(t => t.timeline === period)
+    relevantTasks = relevantTasks.concat(tasks.filter(t => {
+      return t.timeline !== period && relevantTasks.some(a => a.prereqs.map(p => p._id.toString()).indexOf(t._id.toString()))
+    }))
 
+    result += `\\section*${period}\n`
+    result += '\\begin{tikzpicture}[node distance = 2cm, auto]\n'
     result += generatePartialTimeline(relevantTasks)
+    result += '\\end{tikzpicture}\n'
     result += '\n\\newpage\n'
   })
 
