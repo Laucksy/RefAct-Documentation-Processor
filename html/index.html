@@ -47,12 +47,13 @@
       categories: [],
       tasks: [],
       paperwork: [],
-      active: 'categories',
-      docType: 'report',
+      active: localStorage.getItem("RADP_activeTab") || "categories",
+      docType: "report",
       TIME_PERIODS: []
     }
 
     window.onload = function () {
+      handleClick(state.active);
       makeRequest("GET", "http://54.183.93.210:3001/data", null, function (res) {
         let data = JSON.parse(res.responseText);
         updateState(data);
@@ -64,6 +65,7 @@
     function handleClick(tab) {
       if (["categories", "tasks", "paperwork"].indexOf(tab) >= 0) {
         state.active = tab;
+        localStorage.setItem("RADP_activeTab", tab);
         document.getElementById("btnCat").className = "btn" + (tab === "categories" ? " btn-secondary" : " btn-light");
         document.getElementById("btnTas").className = "btn" + (tab === "tasks" ? " btn-secondary" : " btn-light");
         document.getElementById("btnPap").className = "btn" + (tab === "paperwork" ? " btn-secondary" : " btn-light");
@@ -76,10 +78,10 @@
     }
 
     function updateState(data) {
-      if (data.categories) state.categories = data.categories.sort(function (a, b) { return a.number - b.number });
-      if (data.tasks) state.tasks = data.tasks;
-      if (data.paperwork) state.paperwork = data.paperwork;
       if (data.TIME_PERIODS) state.TIME_PERIODS = data.TIME_PERIODS;
+      if (data.categories) state.categories = data.categories.sort(function (a, b) { return a.number - b.number });
+      if (data.tasks) state.tasks = data.tasks.sort(function (a, b) { return state.TIME_PERIODS.indexOf(b.timeline) - state.TIME_PERIODS.indexOf(a.timeline) });
+      if (data.paperwork) state.paperwork = data.paperwork;
       render();
     }
 
@@ -159,7 +161,7 @@
           result += "<br/>Paperwork Received: ";
           for(var k = 0; k < item.paperworkReceived.length; k++) { result += item.paperworkReceived[k].title + ", "; }
           result = result.substring(0, result.length - 1);
-          result += "<br/>" + item.description;
+          result += "<br/>" + item.description.replace(/<tab>/g, "&nbsp;&nbsp;&nbsp;&nbsp;").replace(/\n/g, "<br/>");
           return result;
         },
         editlayout: function (item) { return [
@@ -337,7 +339,7 @@
               let option = document.createElement("option");
               option.value = choice._id;
               option.innerHTML = choice.title;
-              if (opts.selected && opts.multiple && opts.selected.map(o => o._id.toString()).indexOf(choice._id && choice._id.toString()) >= 0) option.setAttribute("selected", "true");
+              if (opts.selected && opts.multiple && opts.selected.map(o => o._id && o._id.toString()).indexOf(choice._id && choice._id.toString()) >= 0) option.setAttribute("selected", "true");
               else if (opts.selected && opts.selected === choice._id) option.setAttribute("selected", "true");
               element.appendChild(option);
             })

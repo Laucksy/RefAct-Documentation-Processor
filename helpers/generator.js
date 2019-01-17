@@ -84,7 +84,7 @@ export const formatText = (str) => {
   if (output.indexOf('LIST[[') >= 0) {
     let index = output.indexOf('LIST[[')
     let front = output.substring(0, index)
-    let back = output.substring(output.indexOf(']]', index) + 2)
+    let back = output.substring(output.indexOf(']]', index) + 3)
 
     index += 5
     let list = '\\begin{enumerate}\n\\itemsep0em\n\\setlength{\\itemindent}{2em}\n'
@@ -127,7 +127,7 @@ const generatePartialTimeline = (tasks) => {
     if (middle) {
       result += `\\node [block${index === 0 ? '' : ', ' + nextLayerDirec + '=1cm of ' + middleAboveID}] (${middleID}) {${taskToNode(middle)}};\n`
       result += addEdges(middle)
-    } else result += `\\coordinate[${index === 0 ? '' : ', ' + nextLayerDirec + '=1cm of ' + middleAboveID}] (${middleID});\n`
+    } else result += `\\coordinate[${index === 0 ? '' : ', ' + nextLayerDirec + '=3cm of ' + middleAboveID}] (${middleID});\n`
 
     result += addToSide(middleID, left, 'left')
     result += addToSide(middleID, right, 'right')
