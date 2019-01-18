@@ -29,6 +29,22 @@ const wrap = fn => {
   }
 }
 
+const populate = (Collection, fn = (c) => c.find()) => {
+  if (Collection === Category) return fn(Category).lean().exec()
+  else if (Collection === Task) {
+    return fn(Task)
+              .populate('prereqs', 'title description')
+              .populate({path: 'paperworkRequired', model: 'Paperwork', select: 'title description'})
+              .populate({path: 'paperworkReceived', model: 'Paperwork', select: 'title description'})
+              .populate('category', 'number title')
+              .lean().exec()
+  } else {
+    return fn(Paperwork)
+              .populate('category', 'number title')
+              .lean().exec()
+  }
+}
+
 index.route('/').get((req, res) => {
   sendResponse(res, {
     version: cfg.server.version,
@@ -41,16 +57,9 @@ index.route('/home').get((req, res) => {
 })
 
 index.route('/data').get(wrap(async (req, res) => {
-  const categories = await Category.find().exec()
-  const tasks = await Task.find()
-                            .populate('prereqs', 'title description')
-                            .populate({path: 'paperworkRequired', model: 'Paperwork', select: 'title description'})
-                            .populate({path: 'paperworkReceived', model: 'Paperwork', select: 'title description'})
-                            .populate('category', 'number title')
-                            .exec()
-  const paperwork = await Paperwork.find()
-                            .populate('category', 'number title')
-                            .exec()
+  const categories = await populate(Category)
+  const tasks = await populate(Task)
+  const paperwork = await populate(Paperwork)
 
   sendResponse(res, {categories, tasks, paperwork, TIME_PERIODS})
 }))
@@ -60,7 +69,7 @@ index.route('/data/:collection').post(wrap(async (req, res) => {
   let query = data._id ? {_id: data._id} : {title: data.title}
   let Collection = req.params.collection === 'category' ? Category : (req.params.collection === 'task' ? Task : Paperwork)
 
-  Collection.findOneAndUpdate(query, {$set: data}, {upsert: true, new: true}).exec().then(item => {
+  populate(Collection, (c) => c.findOneAndUpdate(query, {$set: data}, {upsert: true, new: true})).then(item => {
     sendResponse(res, item._doc)
   })
 })).options(wrap(async (req, res) => {
@@ -75,16 +84,9 @@ index.route('/generate/:type').get(wrap(async (req, res) => {
   const inputFile = 'test.tex'
   const outputFile = 'output.pdf'
 
-  const categories = await Category.find().lean().exec()
-  const tasks = await Task.find()
-                            .populate('prereqs', 'title description category')
-                            .populate({path: 'paperworkRequired', model: 'Paperwork', select: 'title description category'})
-                            .populate({path: 'paperworkReceived', model: 'Paperwork', select: 'title description category'})
-                            .populate('category', 'number title')
-                            .lean().exec()
-  const paperwork = await Paperwork.find()
-                            .populate('category', 'number title')
-                            .lean().exec()
+  const categories = await populate(Category)
+  const tasks = await populate(Task)
+  const paperwork = await populate(Paperwork)
 
   try {
     if (type === 'report') writeToFile(inputFile, generateFullReport(categories, tasks, paperwork))

@@ -263,6 +263,11 @@
         let cardHeader = document.createElement("div");
         cardHeader.className = "card-header bg-light";
         cardHeader.setAttribute("id", "heading" + i);
+        if (data[i].timeline) {
+          let index = state.TIME_PERIODS.indexOf(data[i].timeline);
+          let color = Number(index + 7).toString(16);
+          cardHeader.style.cssText = "background-color: #" + color + color + color + "!important;";
+        }
         let header = document.createElement("h5");
         header.className = "mb-0";
         let btn = document.createElement("button");
