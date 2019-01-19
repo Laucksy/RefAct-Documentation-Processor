@@ -77,12 +77,15 @@
       }
     }
 
-    function updateState(data) {
+    function updateState(data, item = null, i = null) {
       if (data.TIME_PERIODS) state.TIME_PERIODS = data.TIME_PERIODS;
       if (data.categories) state.categories = data.categories.sort(function (a, b) { return a.number - b.number });
       if (data.tasks) state.tasks = data.tasks.sort(function (a, b) { return state.TIME_PERIODS.indexOf(b.timeline) - state.TIME_PERIODS.indexOf(a.timeline) });
       if (data.paperwork) state.paperwork = data.paperwork;
-      render();
+      if (item) {
+        state[data][i] = item;
+      }
+      render(item, i);
     }
 
     function loadDoc() {
@@ -111,19 +114,8 @@
   </script>
 
   <script type="text/javascript">
-    function render() {
-      let table = document.getElementById("content-table");
-      while (table.firstChild) table.removeChild(table.firstChild);
-
-      if (state.active === 'categories') table.appendChild(renderCategories(state.categories));
-      else if (state.active === 'tasks') table.appendChild(renderTasks(state.tasks));
-      else if (state.active === 'paperwork') table.appendChild(renderPaperwork(state.paperwork));
-
-      $('select').selectpicker();
-    }
-
-    function renderCategories(categories) {
-      return generateAccordion(categories, {
+    let renderOptions = {
+      categories: {
         heading: function (item) { return "Category " + item.number + " - " + item.title; },
         readonly: function (item) { return item.intro; },
         editlayout: function (item) { return [
@@ -138,17 +130,14 @@
           let intro = document.getElementById("textarea-" + i).value;
           let data = {_id: item._id, title, number, intro};
           console.log(data);
-          makeRequest("POST", "http://54.183.93.210:3001/data/category", data, saveResponse(categories, "categories"), function(err) {
+          makeRequest("POST", "http://54.183.93.210:3001/data/category", data, saveResponse("categories", i), function(err) {
             console.log(err);
           });
         },
         createText: "New Category",
         createSchema: {title: "New Category", number: 0, intro: ""}
-      });
-    }
-
-    function renderTasks(tasks) {
-      return generateAccordion(tasks, {
+      },
+      tasks: {
         heading: function (item) { return "Task - " + item.title + " - " + (item.category && item.category.title || "No Category"); },
         readonly: function (item) {
           let result = "Timeline: " + item.timeline + "<br/>Required: " + item.required;
@@ -191,17 +180,14 @@
           let description = document.getElementById('textarea-' + i).value;
           let data = {_id: item._id, title, timeline, required, prereqs, category, paperworkRequired, paperworkReceived, description};
           console.log(data);
-          makeRequest("POST", "http://54.183.93.210:3001/data/task", data, saveResponse(tasks, "tasks"), function(err) {
+          makeRequest("POST", "http://54.183.93.210:3001/data/task", data, saveResponse("tasks", i), function(err) {
             console.log(err);
           });
         },
         createText: "New Task",
         createSchema: {title: "New Task", description: "", prereqs: [], category: null, paperworkRequired: [], paperworkReceived: [], timeline: "", required: false}
-      });
-    }
-
-    function renderPaperwork(paperwork) {
-      return generateAccordion(paperwork, {
+      },
+      paperwork: {
         heading: function (item) { return "Paperwork - " + item.title + " - " + (item.category && item.category.title || "No Category"); },
         readonly: function (item) { return item.description; },
         editlayout: function (item) { return [
@@ -216,37 +202,44 @@
           let description = document.getElementById('textarea-' + i).value;
           let data = {_id: item._id, title, category, description};
           console.log(data);
-          makeRequest("POST", "http://54.183.93.210:3001/data/paperwork", data, saveResponse(paperwork, "paperwork"), function(err) {
+          makeRequest("POST", "http://54.183.93.210:3001/data/paperwork", data, saveResponse("paperwork", i), function(err) {
             console.log(err);
           });
         },
         createText: "New Paperwork",
         createSchema: {title: "New Paperwork", description: "", category: null}
-      });
+      }
     }
 
-    function saveResponse (data, key) {
+    function render(item = null, i = null) {
+      if (item === null) {
+        let table = document.getElementById("content-table");
+        while (table.firstChild) table.removeChild(table.firstChild);
+        table.appendChild(generateAccordion(state[state.active], renderOptions[state.active]));
+      } else {
+        let accordion = document.getElementById("accordion");
+        let card = document.getElementById("card" + i);
+        let options = renderOptions[state.active];
+        let data = {};
+        data[i] = item;
+
+        if (card) accordion.replaceChild(generateCard(data, options, i), card);
+        else {
+          accordion.removeChild(accordion.lastChild); // Remove edit button
+          accordion.appendChild(generateCard(data, options, i));
+          accordion.appendChild(generateCreateButton(i+1, options));
+          setTimeout(function() { window.scrollTo(0, document.body.scrollHeight); }, 500);
+        }
+      }
+
+      $('select').selectpicker();
+    }
+
+    function saveResponse (key, i) {
       return function (res) {
         let dat = JSON.parse(res.responseText);
-        if (data.slice(-1)[0].number === 0) {
-          let updateData = {};
-          updateData[key] = data.slice(0, -1).concat([dat]);
-          updateState(updateData);
-          document.getElementById("accordion-toggle-" + (data.length - 1)).click();
-        } else {
-          let newData = [];
-          let index = 0;
-          for(var j = 0; j < data.length; j++) {
-            if (data[j]._id === undefined || data[j]._id === dat._id) {
-              newData.push(dat);
-              index = j;
-            } else newData.push(data[j]);
-          }
-          let updateData = {};
-          updateData[key] = newData;
-          updateState(updateData);
-          document.getElementById("accordion-toggle-" + index).click();
-        }
+        updateState(key, dat, i);
+        document.getElementById("accordion-toggle-" + i).click();
       };
     }
   </script>
@@ -257,133 +250,124 @@
       accordion.setAttribute("id", "accordion");
       accordion.className = "mb-3";
 
-      for (let i = 0; i < data.length; i++) {
-        let card = document.createElement("div");
-        card.className = "card";
-        let cardHeader = document.createElement("div");
-        cardHeader.className = "card-header bg-light";
-        cardHeader.setAttribute("id", "heading" + i);
-        if (data[i].timeline) {
-          let index = state.TIME_PERIODS.indexOf(data[i].timeline);
-          let color = Number(index + 7).toString(16);
-          cardHeader.style.cssText = "background-color: #" + color + color + color + "!important;";
-        }
-        let header = document.createElement("h5");
-        header.className = "mb-0";
-        let btn = document.createElement("button");
-        btn.className = "btn collapsed";
-        btn.setAttribute("id", "accordion-toggle-" + i);
-        btn.setAttribute("data-toggle", "collapse");
-        btn.setAttribute("data-target", "#collapse" + i);
-        btn.setAttribute("aria-expanded", "false");
-        btn.setAttribute("aria-controls", "collapse" + i);
-        btn.innerHTML = options.heading(data[i]);
+      for (let i = 0; i < data.length; i++) accordion.appendChild(generateCard(data, options, i));
 
-        header.appendChild(btn);
-        cardHeader.appendChild(header);
-        card.appendChild(cardHeader);
+      // Create button to add new item
+      accordion.appendChild(generateCreateButton(data.length, options));
 
-        let collapse = document.createElement("div");
-        collapse.className = "collapse";
-        collapse.setAttribute("id", "collapse" + i);
-        collapse.setAttribute("aria-labelledby", "heading" + i);
+      return accordion;
+    }
 
-        // Create view-only version of item
-        let cardBody = document.createElement("div");
-        cardBody.className = "card-body";
-        cardBody.innerHTML = options.readonly(data[i]);
-        cardBody.setAttribute("id", "collapse-body" + i);
-        cardBody.appendChild(generateButtonGroup([
-          {class: "btn-sm btn-outline-secondary", name: "Edit", onclick: function() {
-            document.getElementById("collapse-body" + i).style.display = "none";
-            document.getElementById("collapse-body-edit" + i).style.display = "block";
-          }},
-        ]));
+    function generateCard(data, options, i) {
+      let card = document.createElement("div");
+      card.className = "card";
+      card.setAttribute("id", "card" + i);
 
-        // Create editing version of item
-        let editCardBody = document.createElement("div");
-        editCardBody.className = "card-body";
-        editCardBody.style.display = "none";
-        editCardBody.setAttribute("id", "collapse-body-edit" + i);
+      // Create header that is always visible and has buton that expands collape
+      card.appendChild(generateCardHeader(data, options, i));
 
-        for(var k = 0; k < options.editlayout(data[i]).length; k++) {
-          let opts = options.editlayout(data[i])[k];
-          if (opts.type !== "checkbox" && opts.type !== "select") {
-            let element = document.createElement(opts.type);
-            if (opts.type) element.type = opts.type;
-            if (opts.value) element.value = opts.value;
-            if (opts.width) element.style.width = opts.width;
-            if (opts.display) element.style.display = opts.display;
-            if (opts.id) element.setAttribute("id", opts.id + i);
-            if (opts.innerHTML) element.innerHTML = opts.innerHTML;
-            if (opts.type === "textarea") element.rows = "10";
-            editCardBody.appendChild(element);
-          } else if (opts.type === "checkbox"){
-            let element = document.createElement("div");
-            element.className = "checkbox";
-            element.style.display = "inline-block";
-            if (opts.width) element.style.width = opts.width;
+      // Create hidden card that can dropdown on click
+      let collapse = document.createElement("div");
+      collapse.className = "collapse";
+      collapse.setAttribute("id", "collapse" + i);
+      collapse.setAttribute("aria-labelledby", "heading" + i);
 
-            let label = document.createElement("label");
-            let input = document.createElement("input");
-            input.type = "checkbox";
-            if (opts.value) input.setAttribute("checked", opts.value);
-            if (opts.id) input.setAttribute("id", opts.id + i);
-            label.appendChild(document.createTextNode("Required:"));
-            label.appendChild(input);
-            element.appendChild(label);
-            editCardBody.appendChild(element);
-          } else {
-            let element = document.createElement("select");
-            if (opts.multiple) element.className = "selectpicker";
-            if (opts.multiple) element.multiple = true;
-            if (opts.multiple) element.setAttribute("data-live-search", "true");
-            if (opts.width) element.style.width = opts.width;
-            if (opts.id) element.setAttribute("id", opts.id + i);
-            opts.options.forEach(function (choice) {
-              let option = document.createElement("option");
-              option.value = choice._id;
-              option.innerHTML = choice.title;
-              if (opts.selected && opts.multiple && opts.selected.map(o => o._id && o._id.toString()).indexOf(choice._id && choice._id.toString()) >= 0) option.setAttribute("selected", "true");
-              else if (opts.selected && opts.selected === choice._id) option.setAttribute("selected", "true");
-              element.appendChild(option);
-            })
-            editCardBody.appendChild(element);
-          }
-        }
+      // Create view-only version of item
+      collapse.appendChild(generateReadableBody(data, options, i));
 
-        editCardBody.appendChild(generateButtonGroup([
-          {class: "btn-sm btn-outline-secondary", name: "Save", onclick: function() {
-            options.save(data[i], i);
-            document.getElementById("collapse-body" + i).style.display = "block";
-            document.getElementById("collapse-body-edit" + i).style.display = "none";
-          }},
-          {class: "btn-sm btn-outline-secondary", name: "Cancel", onclick: function() {
-            document.getElementById("collapse-body" + i).style.display = "block";
-            document.getElementById("collapse-body-edit" + i).style.display = "none";
-          }}
-        ]));
+      // Create editing version of item
+      collapse.appendChild(generateEditableBody(data, options, i));
 
+      card.appendChild(collapse);
 
-        collapse.appendChild(cardBody);
-        collapse.appendChild(editCardBody);
-        card.appendChild(collapse);
-        accordion.appendChild(card);
+      return card;
+    }
+
+    function generateCardHeader(data, options, i) {
+      let cardHeader = document.createElement("div");
+      cardHeader.className = "card-header bg-light";
+      cardHeader.setAttribute("id", "heading" + i);
+
+      if (data[i].timeline) {
+        let index = state.TIME_PERIODS.indexOf(data[i].timeline);
+        let color = Number(index + 7).toString(16);
+        cardHeader.style.cssText = "background-color: #" + color + color + color + "!important;";
       }
 
-      accordion.appendChild(generateButtonGroup([
+      let header = document.createElement("h5");
+      header.className = "mb-0";
+
+      let btn = document.createElement("button");
+      btn.className = "btn collapsed";
+      btn.setAttribute("id", "accordion-toggle-" + i);
+      btn.setAttribute("data-toggle", "collapse");
+      btn.setAttribute("data-target", "#collapse" + i);
+      btn.setAttribute("aria-expanded", "false");
+      btn.setAttribute("aria-controls", "collapse" + i);
+      btn.innerHTML = options.heading(data[i]);
+
+      header.appendChild(btn);
+      cardHeader.appendChild(header);
+
+      return cardHeader;
+    }
+
+    function generateReadableBody(data, options, i) {
+      let cardBody = document.createElement("div");
+
+      cardBody.className = "card-body";
+      cardBody.innerHTML = options.readonly(data[i]);
+      cardBody.setAttribute("id", "collapse-body" + i);
+      cardBody.appendChild(generateButtonGroup([
+        {class: "btn-sm btn-outline-secondary", name: "Edit", onclick: function() {
+          document.getElementById("collapse-body" + i).style.display = "none";
+          document.getElementById("collapse-body-edit" + i).style.display = "block";
+        }},
+      ]));
+
+      return cardBody;
+    }
+
+    function generateEditableBody(data, options, i) {
+      let editCardBody = document.createElement("div");
+      editCardBody.className = "card-body";
+      editCardBody.style.display = "none";
+      editCardBody.setAttribute("id", "collapse-body-edit" + i);
+
+      for(var k = 0; k < options.editlayout(data[i]).length; k++) {
+        let opts = options.editlayout(data[i])[k];
+
+        if (opts.type !== "checkbox" && opts.type !== "select") editCardBody.appendChild(generateElement(opts, i));
+        else if (opts.type === "checkbox") editCardBody.appendChild(generateCheckbox(opts, i));
+        else editCardBody.appendChild(generateSelect(opts, i));
+      }
+
+      editCardBody.appendChild(generateButtonGroup([
+        {class: "btn-sm btn-outline-secondary", name: "Save", onclick: function() {
+          options.save(data[i], i);
+          document.getElementById("collapse-body" + i).style.display = "block";
+          document.getElementById("collapse-body-edit" + i).style.display = "none";
+        }},
+        {class: "btn-sm btn-outline-secondary", name: "Cancel", onclick: function() {
+          document.getElementById("collapse-body" + i).style.display = "block";
+          document.getElementById("collapse-body-edit" + i).style.display = "none";
+        }}
+      ]));
+
+      return editCardBody;
+    }
+
+    function generateCreateButton(index, options) {
+      return generateButtonGroup([
         {class: "btn-sm btn-outline-secondary", name: options.createText, onclick: function() {
-          let index = data.length;
-          data.push(options.createSchema);
-          render();
+          //data.push(options.createSchema);
+          render(options.createSchema, index);
 
           document.getElementById("accordion-toggle-" + index).click();
           document.getElementById("collapse-body" + index).style.display = "none";
           document.getElementById("collapse-body-edit" + index).style.display = "block";
         }}
-      ]));
-
-      return accordion;
+      ]);
     }
 
     function generateButtonGroup(data) {
@@ -402,6 +386,59 @@
       }
       dFlex.appendChild(btnGroup);
       return dFlex;
+    }
+
+    function generateCheckbox(opts, i) {
+      let element = document.createElement("div");
+      element.className = "checkbox";
+      element.style.display = "inline-block";
+      if (opts.width) element.style.width = opts.width;
+
+      let label = document.createElement("label");
+      let input = document.createElement("input");
+      input.type = "checkbox";
+      if (opts.value) input.setAttribute("checked", opts.value);
+      if (opts.id) input.setAttribute("id", opts.id + i);
+      label.appendChild(document.createTextNode("Required:"));
+      label.appendChild(input);
+      element.appendChild(label);
+
+      return element;
+    }
+
+    function generateElement(opts, i) {
+      let element = document.createElement(opts.type);
+
+      if (opts.type) element.type = opts.type;
+      if (opts.value) element.value = opts.value;
+      if (opts.width) element.style.width = opts.width;
+      if (opts.display) element.style.display = opts.display;
+      if (opts.id) element.setAttribute("id", opts.id + i);
+      if (opts.innerHTML) element.innerHTML = opts.innerHTML;
+      if (opts.type === "textarea") element.rows = "10";
+
+      return element;
+    }
+
+    function generateSelect(opts, i) {
+      let element = document.createElement("select");
+
+      if (opts.multiple) element.className = "selectpicker";
+      if (opts.multiple) element.multiple = true;
+      if (opts.multiple) element.setAttribute("data-live-search", "true");
+      if (opts.width) element.style.width = opts.width;
+      if (opts.id) element.setAttribute("id", opts.id + i);
+
+      opts.options.forEach(function (choice) {
+        let option = document.createElement("option");
+        option.value = choice._id;
+        option.innerHTML = choice.title;
+        if (opts.selected && opts.multiple && opts.selected.map(o => o._id && o._id.toString()).indexOf(choice._id && choice._id.toString()) >= 0) option.setAttribute("selected", "true");
+        else if (opts.selected && opts.selected === choice._id) option.setAttribute("selected", "true");
+        element.appendChild(option);
+      })
+
+      return element;
     }
   </script>
 </body>
