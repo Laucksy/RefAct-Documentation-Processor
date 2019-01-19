@@ -33,9 +33,9 @@ const populate = (Collection, fn = (c) => c.find()) => {
   if (Collection === Category) return fn(Category).lean().exec()
   else if (Collection === Task) {
     return fn(Task)
-              .populate('prereqs', 'title description')
-              .populate({path: 'paperworkRequired', model: 'Paperwork', select: 'title description'})
-              .populate({path: 'paperworkReceived', model: 'Paperwork', select: 'title description'})
+              .populate('prereqs', 'title category description')
+              .populate({path: 'paperworkRequired', model: 'Paperwork', select: 'title category description'})
+              .populate({path: 'paperworkReceived', model: 'Paperwork', select: 'title category description'})
               .populate('category', 'number title')
               .lean().exec()
   } else {
@@ -70,7 +70,7 @@ index.route('/data/:collection').post(wrap(async (req, res) => {
   let Collection = req.params.collection === 'category' ? Category : (req.params.collection === 'task' ? Task : Paperwork)
 
   populate(Collection, (c) => c.findOneAndUpdate(query, {$set: data}, {upsert: true, new: true})).then(item => {
-    sendResponse(res, item._doc)
+    sendResponse(res, item)
   })
 })).options(wrap(async (req, res) => {
   res.set('Access-Control-Allow-Methods', 'POST')

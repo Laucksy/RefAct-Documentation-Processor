@@ -79,7 +79,7 @@ export const generateTimeline = (tasks) => {
 }
 
 export const formatText = (str) => {
-  let output = str.replace(/<tab>/g, '\\tab ').replace(/\n/g, '\\\\\n')
+  let output = str.replace(/<tab>/g, '\\tab ').replace(/\n/g, '\\\\\n').replace(/&/g, '\\&').replace(/\$/g, '\\$')
 
   if (output.indexOf('LIST[[') >= 0) {
     let index = output.indexOf('LIST[[')
