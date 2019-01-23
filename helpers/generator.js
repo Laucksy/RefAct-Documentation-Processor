@@ -17,40 +17,40 @@ export const generateFullReport = (categories, tasks, paperwork) => {
 
   categories.sort((a, b) => a.number - b.number).forEach(category => {
     result += `\\chapter{${category.title}}\n`
-    result += formatText(category.intro)
+    result += '\t' + formatText(category.intro)
 
     let tasksForCategory = tasks.filter(t => t.category._id.toString() === category._id.toString())
     let paperworkForCategory = paperwork.filter(p => p.category._id.toString() === category._id.toString())
 
-    result += '\\section{Tasks}\n'
+    result += '\t\\section{Tasks}\n'
     TIME_PERIODS.forEach(period => {
       let tasksForTimePeriod = tasksForCategory.filter(t => t.timeline === period)
-      if (tasksForTimePeriod.length > 0) result += `\\subsection{${period}}\n`
+      if (tasksForTimePeriod.length > 0) result += `\t\t\\subsection{${period}}\n`
       tasksForTimePeriod.forEach(task => {
-        result += `\\paragraph{${formatText(task.title) + (task.required ? '' : ' (Optional)')}}\n`
-        result += formatText(task.description + '\n') + '\n'
+        result += `\t\t\t\\paragraph{${formatText(task.title) + (task.required ? '' : ' (Optional)')}}\n`
+        result += '\t\t\t' + formatText(task.description + '\n', '\t\t\t') + '\n'
 
-        result += formatText('<tab>') + 'Pre-Requisites:' + (task.prereqs.length
+        result += '\t\t\t' + formatText('<tab>') + 'Pre-Requisites:' + (task.prereqs.length
           ? task.prereqs.map(p => ` ${formatText(p.title)} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
           : ' None')
         result += formatText('\n')
 
-        result += formatText('<tab>') + 'Paperwork Required:' + (task.paperworkRequired.length
+        result += '\t\t\t' + formatText('<tab>') + 'Paperwork Required:' + (task.paperworkRequired.length
           ? task.paperworkRequired.map(p => ` ${formatText(p.title)} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
           : ' None')
         result += formatText('\n')
 
-        result += formatText('<tab>') + 'Paperwork Received:' + (task.paperworkReceived.length
+        result += '\t\t\t' + formatText('<tab>') + 'Paperwork Received:' + (task.paperworkReceived.length
           ? task.paperworkReceived.map(p => ` ${formatText(p.title)} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
           : ' None')
         result += formatText('\n')
       })
     })
 
-    result += '\\section{Paperwork}\n'
+    result += '\t\\section{Paperwork}\n'
     paperworkForCategory.forEach(paperwork => {
-      result += `\\paragraph{${formatText(paperwork.title)}}\n`
-      result += formatText(paperwork.description + '\n') + '\n'
+      result += `\t\t\\paragraph{${formatText(paperwork.title)}}\n`
+      result += '\t\t\t' + formatText(paperwork.description + '\n', '\t\t\t') + '\n'
     })
 
     result += '\n'
@@ -86,12 +86,12 @@ export const generateTimeline = (tasks) => {
   return result
 }
 
-export const formatText = (str) => {
+export const formatText = (str, tabs) => {
   let output = str.replace(/<tab>/g, '\\tab ').replace(/\n/g, '\\\\\n').replace(/&/g, '\\&').replace(/\$/g, '\\$')
 
   if (output.indexOf('LIST') >= 0) {
     let startIndex = output.indexOf('LIST')
-    let endIndex = output.indexOf('ENDLIST', startIndex) + 8
+    let endIndex = output.indexOf('ENDLIST', startIndex) + 9
 
     let front = output.substring(0, startIndex)
     let middle = output.substring(startIndex, endIndex)
@@ -100,29 +100,30 @@ export const formatText = (str) => {
     let list = ''
     let depth = 0
     middle.split('\n').slice(1, -1).forEach(line => {
-      let newDepth = getListDepth(line)
+      let extraTabs = getExtraTabs(line)
+      let newDepth = extraTabs.length
 
-      if (newDepth > depth) list = list + LIST_START
-      else if (newDepth < depth) list = list + LIST_END
+      if (newDepth > depth) list = list + LIST_START(tabs + extraTabs)
+      else if (newDepth < depth) list = list + LIST_END(tabs + extraTabs)
 
-      if (depth > 0) list = list + '\\item ' + line + '\n'
+      if (newDepth > 0) list = list + extraTabs + '\\item ' + line.substring(newDepth, line.length - 2) + '\n'
       depth = newDepth
     })
     list = list + LIST_END
 
     output = front + list + back
-  }
+  } else output = output.replace(/\n/g, '\n' + tabs)
 
   return output
 }
 
-const getListDepth = (line) => {
-  if (line.substring(0, 5) === '-----') return 5
-  else if (line.substring(0, 4) === '----') return 4
-  else if (line.substring(0, 3) === '---') return 3
-  else if (line.substring(0, 2) === '--') return 2
-  else if (line.substring(0, 1) === '-') return 1
-  else return 0
+const getExtraTabs = (line) => {
+  if (line.substring(0, 5) === '-----') return '\t\t\t\t\t'
+  else if (line.substring(0, 4) === '----') return '\t\t\t\t'
+  else if (line.substring(0, 3) === '---') return '\t\t\t'
+  else if (line.substring(0, 2) === '--') return '\t\t'
+  else if (line.substring(0, 1) === '-') return '\t'
+  else return ''
 }
 
 const generatePartialTimeline = (tasks, period) => {
