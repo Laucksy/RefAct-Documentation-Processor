@@ -10,7 +10,7 @@ import {
 
 const TIMELINE_ORIENTATION = 'landscape'
 
-export const generateFullReport = (categories, tasks, paperwork) => {
+export const generateFullReport = (categories, tasks, paperwork, appendices) => {
   let result = ''
 
   result += REPORT_HEADER + '\n'
@@ -55,6 +55,13 @@ export const generateFullReport = (categories, tasks, paperwork) => {
 
     result += '\n'
   })
+
+  result += '\\chapter{Appendix}\n'
+  appendices.forEach(appendix => {
+    result += `\t\\section{${formatText(appendix.title)}}\n`
+    result += '\t\t' + formatText(appendix.description + '\n', '\t\t') + '\n'
+  })
+  result += '\n'
 
   result += REPORT_FOOTER
   return result

@@ -6,7 +6,8 @@ import { TIME_PERIODS } from './constants'
 import {
   Category,
   Task,
-  Paperwork
+  Paperwork,
+  Appendix
 } from './db'
 import {
   generateFullReport,
@@ -38,8 +39,12 @@ const populate = (Collection, fn = (c) => c.find()) => {
               .populate({path: 'paperworkReceived', model: 'Paperwork', select: 'title category description'})
               .populate('category', 'number title')
               .lean().exec()
-  } else {
+  } else if (Collection === Paperwork) {
     return fn(Paperwork)
+              .populate('category', 'number title')
+              .lean().exec()
+  } else {
+    return fn(Appendix)
               .populate('category', 'number title')
               .lean().exec()
   }
@@ -60,14 +65,18 @@ index.route('/data').get(wrap(async (req, res) => {
   const categories = await populate(Category)
   const tasks = await populate(Task)
   const paperwork = await populate(Paperwork)
+  const appendix = await populate(Appendix)
 
-  sendResponse(res, {categories, tasks, paperwork, TIME_PERIODS})
+  sendResponse(res, {categories, tasks, paperwork, appendix, TIME_PERIODS})
 }))
 
 index.route('/data/:collection').post(wrap(async (req, res) => {
   const data = req.body
   let query = data._id ? {_id: data._id} : {title: data.title}
-  let Collection = req.params.collection === 'category' ? Category : (req.params.collection === 'task' ? Task : Paperwork)
+  let Collection = req.params.collection === 'category'
+                      ? Category : (req.params.collection === 'task'
+                      ? Task : (req.params.collection === 'paperwork'
+                      ? Paperwork : Appendix))
 
   populate(Collection, (c) => c.findOneAndUpdate(query, {$set: data}, {upsert: true, new: true})).then(item => {
     sendResponse(res, item)
@@ -87,9 +96,10 @@ index.route('/generate/:type').get(wrap(async (req, res) => {
   const categories = await populate(Category)
   const tasks = await populate(Task)
   const paperwork = await populate(Paperwork)
+  const appendices = await populate(Appendix)
 
   try {
-    if (type === 'report') writeToFile(inputFile, generateFullReport(categories, tasks, paperwork))
+    if (type === 'report') writeToFile(inputFile, generateFullReport(categories, tasks, paperwork, appendices))
     else if (type === 'timeline') writeToFile(inputFile, generateTimeline(tasks))
 
     const pdf = latex(readFromFile(inputFile), {passes: 2})

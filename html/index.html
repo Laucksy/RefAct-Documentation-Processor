@@ -36,6 +36,7 @@
       <a href="#" id="btnCat" class="btn btn-secondary" onclick="handleClick('categories')">Categories</a>
       <a href="#" id="btnTas" class="btn btn-light" onclick="handleClick('tasks')">Tasks</a>
       <a href="#" id="btnPap" class="btn btn-light" onclick="handleClick('paperwork')">Paperwork</a>
+      <a href="#" id="btnApp" class="btn btn-light" onclick="handleClick('appendix')">Appendix</a>
     </div>
   </div>
   <br/>
@@ -47,6 +48,7 @@
       categories: [],
       tasks: [],
       paperwork: [],
+      appendices: [],
       active: localStorage.getItem("RADP_activeTab") || "categories",
       docType: "report",
       TIME_PERIODS: []
@@ -63,12 +65,13 @@
     }
 
     function handleClick(tab) {
-      if (["categories", "tasks", "paperwork"].indexOf(tab) >= 0) {
+      if (["categories", "tasks", "paperwork", "appendix"].indexOf(tab) >= 0) {
         state.active = tab;
         localStorage.setItem("RADP_activeTab", tab);
         document.getElementById("btnCat").className = "btn" + (tab === "categories" ? " btn-secondary" : " btn-light");
         document.getElementById("btnTas").className = "btn" + (tab === "tasks" ? " btn-secondary" : " btn-light");
         document.getElementById("btnPap").className = "btn" + (tab === "paperwork" ? " btn-secondary" : " btn-light");
+        document.getElementById("btnApp").className = "btn" + (tab === "appendix" ? " btn-secondary" : " btn-light");
         render();
       } else {
         state.docType = tab;
@@ -82,6 +85,7 @@
       if (data.categories) state.categories = data.categories.sort(function (a, b) { return a.number - b.number });
       if (data.tasks) state.tasks = data.tasks.sort(function (a, b) { return state.TIME_PERIODS.indexOf(b.timeline) - state.TIME_PERIODS.indexOf(a.timeline) });
       if (data.paperwork) state.paperwork = data.paperwork;
+      if (data.appendices) state.appendixes = data.appendices;
       if (item) {
         state[data][i] = item;
       }
@@ -205,6 +209,27 @@
         },
         createText: "New Paperwork",
         createSchema: {title: "New Paperwork", description: "", category: null}
+      },
+      appendices: {
+        heading: function (item) { return "Appendix - " + item.title + " - " + (item.category && item.category.title || "No Category"); },
+        readonly: function (item) { return item.description; },
+        editlayout: function (item) { return [
+            {type: "input", value: item.title, width: "30%", id: "input-1-"},
+            {type: "div", width: "40%", display: "inline-block"},
+            {type: "select", multiple: false, options: state.categories.map(function (c) {return {_id: c._id, title: c.title};}), selected: item.category && item.category._id, width: "30%", id: "select-1-"},
+            {type: "textarea", value: item.description, width: "100%", id: "textarea-"}
+        ]; },
+        save: function (item, i) {
+          let title = document.getElementById("input-1-" + i).value;
+          let category = document.getElementById('select-1-' + i).value;
+          let description = document.getElementById('textarea-' + i).value;
+          let data = {_id: item._id, title, category, description};
+          makeRequest("POST", "http://54.183.93.210:3001/data/appendix", data, saveResponse("appendices", i), function(err) {
+            console.log(err);
+          });
+        },
+        createText: "New Appendix",
+        createSchema: {title: "New Appendix", description: "", category: null}
       }
     }
 
