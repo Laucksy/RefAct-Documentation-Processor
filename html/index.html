@@ -36,7 +36,7 @@
       <a href="#" id="btnCat" class="btn btn-secondary" onclick="handleClick('categories')">Categories</a>
       <a href="#" id="btnTas" class="btn btn-light" onclick="handleClick('tasks')">Tasks</a>
       <a href="#" id="btnPap" class="btn btn-light" onclick="handleClick('paperwork')">Paperwork</a>
-      <a href="#" id="btnApp" class="btn btn-light" onclick="handleClick('appendix')">Appendix</a>
+      <a href="#" id="btnApp" class="btn btn-light" onclick="handleClick('appendices')">Appendices</a>
     </div>
   </div>
   <br/>
@@ -65,13 +65,13 @@
     }
 
     function handleClick(tab) {
-      if (["categories", "tasks", "paperwork", "appendix"].indexOf(tab) >= 0) {
+      if (["categories", "tasks", "paperwork", "appendices"].indexOf(tab) >= 0) {
         state.active = tab;
         localStorage.setItem("RADP_activeTab", tab);
         document.getElementById("btnCat").className = "btn" + (tab === "categories" ? " btn-secondary" : " btn-light");
         document.getElementById("btnTas").className = "btn" + (tab === "tasks" ? " btn-secondary" : " btn-light");
         document.getElementById("btnPap").className = "btn" + (tab === "paperwork" ? " btn-secondary" : " btn-light");
-        document.getElementById("btnApp").className = "btn" + (tab === "appendix" ? " btn-secondary" : " btn-light");
+        document.getElementById("btnApp").className = "btn" + (tab === "appendices" ? " btn-secondary" : " btn-light");
         render();
       } else {
         state.docType = tab;
@@ -85,7 +85,7 @@
       if (data.categories) state.categories = data.categories.sort(function (a, b) { return a.number - b.number });
       if (data.tasks) state.tasks = data.tasks.sort(function (a, b) { return state.TIME_PERIODS.indexOf(b.timeline) - state.TIME_PERIODS.indexOf(a.timeline) });
       if (data.paperwork) state.paperwork = data.paperwork;
-      if (data.appendices) state.appendixes = data.appendices;
+      if (data.appendices) state.appendices = data.appendices;
       if (item) {
         state[data][i] = item;
       }
@@ -437,7 +437,7 @@
       if (opts.display) element.style.display = opts.display;
       if (opts.id) element.setAttribute("id", opts.id + i);
       if (opts.innerHTML) element.innerHTML = opts.innerHTML;
-      if (opts.type === "textarea") element.rows = "10";
+      if (opts.type === "textarea") element.rows = opts.value.split("\n").length || "10";
 
       return element;
     }

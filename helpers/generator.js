@@ -116,7 +116,10 @@ export const formatText = (str, tabs = '') => {
       if (newDepth > 0) list = list + tabs + extraTabs + '\\item ' + line.substring(newDepth, line.length - 2) + '\n'
       depth = newDepth
     })
-    list = list + LIST_END(tabs + '\t')
+    while (depth > 0) {
+      list = list + LIST_END(tabs + '\t')
+      depth -= 1
+    }
 
     output = front.substring(0, front.length - tabs.length) + list + back
   } else if (tabs) output = output.replace(/\n/g, '\n' + tabs)

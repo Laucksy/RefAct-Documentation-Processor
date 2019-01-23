@@ -65,9 +65,9 @@ index.route('/data').get(wrap(async (req, res) => {
   const categories = await populate(Category)
   const tasks = await populate(Task)
   const paperwork = await populate(Paperwork)
-  const appendix = await populate(Appendix)
+  const appendices = await populate(Appendix)
 
-  sendResponse(res, {categories, tasks, paperwork, appendix, TIME_PERIODS})
+  sendResponse(res, {categories, tasks, paperwork, appendices, TIME_PERIODS})
 }))
 
 index.route('/data/:collection').post(wrap(async (req, res) => {
