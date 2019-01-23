@@ -237,7 +237,12 @@
       if (item === null) {
         let table = document.getElementById("content-table");
         while (table.firstChild) table.removeChild(table.firstChild);
-        table.appendChild(generateAccordion(state[state.active], renderOptions[state.active]));
+
+        let accordion = document.createElement("div");
+        accordion.setAttribute("id", "accordion");
+        accordion.className = "mb-3";
+        table.appendChild(accordion);
+        generateAccordion(state[state.active], renderOptions[state.active])
       } else {
         let accordion = document.getElementById("accordion");
         let card = document.getElementById("card" + i);
@@ -268,16 +273,16 @@
 
   <script type="text/javascript">
     function generateAccordion(data, options) {
-      let accordion = document.createElement("div");
-      accordion.setAttribute("id", "accordion");
-      accordion.className = "mb-3";
+      if (data.length === 0) return;
+      let accordion = document.getElementById("accordion");
 
-      for (let i = 0; i < data.length; i++) accordion.appendChild(generateCard(data, options, i));
-
-      // Create button to add new item
-      accordion.appendChild(generateCreateButton(data.length, options));
-
-      return accordion;
+      (function accordionLoop (i) {
+         setTimeout(function () {
+            accordion.appendChild(generateCard(data, options, i));
+            if (++i < data.length) accordionLoop(i);
+            else accordion.appendChild(generateCreateButton(data.length, options));
+         }, 50);
+      })(0);
     }
 
     function generateCard(data, options, i) {
