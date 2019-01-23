@@ -17,7 +17,7 @@ export const generateFullReport = (categories, tasks, paperwork) => {
 
   categories.sort((a, b) => a.number - b.number).forEach(category => {
     result += `\\chapter{${category.title}}\n`
-    result += '\t' + formatText(category.intro)
+    result += '\t' + formatText(category.intro, '\t') + '\n'
 
     let tasksForCategory = tasks.filter(t => t.category._id.toString() === category._id.toString())
     let paperworkForCategory = paperwork.filter(p => p.category._id.toString() === category._id.toString())
@@ -50,7 +50,7 @@ export const generateFullReport = (categories, tasks, paperwork) => {
     result += '\t\\section{Paperwork}\n'
     paperworkForCategory.forEach(paperwork => {
       result += `\t\t\\paragraph{${formatText(paperwork.title)}}\n`
-      result += '\t\t\t' + formatText(paperwork.description + '\n', '\t\t\t') + '\n'
+      result += '\t\t' + formatText(paperwork.description + '\n', '\t\t') + '\n'
     })
 
     result += '\n'
@@ -86,16 +86,16 @@ export const generateTimeline = (tasks) => {
   return result
 }
 
-export const formatText = (str, tabs) => {
+export const formatText = (str, tabs = '') => {
   let output = str.replace(/<tab>/g, '\\tab ').replace(/\n/g, '\\\\\n').replace(/&/g, '\\&').replace(/\$/g, '\\$')
 
   if (output.indexOf('LIST') >= 0) {
     let startIndex = output.indexOf('LIST')
     let endIndex = output.indexOf('ENDLIST', startIndex) + 9
 
-    let front = output.substring(0, startIndex)
+    let front = output.substring(0, startIndex).replace(/\n/g, '\n' + tabs)
     let middle = output.substring(startIndex, endIndex)
-    let back = output.substring(endIndex)
+    let back = output.substring(endIndex).replace(/\n/g, '\n' + tabs)
 
     let list = ''
     let depth = 0
@@ -103,16 +103,16 @@ export const formatText = (str, tabs) => {
       let extraTabs = getExtraTabs(line)
       let newDepth = extraTabs.length
 
-      if (newDepth > depth) list = list + LIST_START(tabs + extraTabs)
+      if (newDepth > depth) list = list + LIST_START(tabs + (depth === 0 ? '' : extraTabs))
       else if (newDepth < depth) list = list + LIST_END(tabs + extraTabs)
 
-      if (newDepth > 0) list = list + extraTabs + '\\item ' + line.substring(newDepth, line.length - 2) + '\n'
+      if (newDepth > 0) list = list + tabs + extraTabs + '\\item ' + line.substring(newDepth, line.length - 2) + '\n'
       depth = newDepth
     })
-    list = list + LIST_END
+    list = list + LIST_END(tabs + '\t')
 
-    output = front + list + back
-  } else output = output.replace(/\n/g, '\n' + tabs)
+    output = front.substring(0, front.length - tabs.length) + list + back
+  } else if (tabs) output = output.replace(/\n/g, '\n' + tabs)
 
   return output
 }

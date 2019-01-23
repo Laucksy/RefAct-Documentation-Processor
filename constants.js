@@ -1,7 +1,7 @@
 export const TIME_PERIODS = ['Pre-Notification', 'Pre-Arrival', 'Day of Arrival', 'First Day Post-Arrival', 'First Week Post-Arrival', 'First Month Post-Arrival', 'First 3 Months Post-Arrival', 'First 6 Months Post-Arrival']
 
-export const LIST_START = (tabs = '') => `${tabs}\\begin{enumerate}\n${tabs}\\itemsep0em\n${tabs}\\setlength{\\itemindent}{2em}\n`
-export const LIST_END = (tabs = '') => `${tabs}\\end{enumerate}\n`
+export const LIST_START = (tabs = '') => `${tabs}\\begin{enumerate}\n\t${tabs}\\itemsep0em\n\t${tabs}\\setlength{\\itemindent}{2em}\n`
+export const LIST_END = (tabs = '') => `${tabs.length > 0 ? tabs.substring(1) : tabs}\\end{enumerate}\n`
 
 export const REPORT_HEADER = `\\documentclass{report}
 \\usepackage[utf8]{inputenc}
