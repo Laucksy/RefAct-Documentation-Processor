@@ -129,7 +129,6 @@
           let number = parseInt(document.getElementById("input-2-" + i).value);
           let intro = document.getElementById("textarea-" + i).value;
           let data = {_id: item._id, title, number, intro};
-          console.log(data);
           makeRequest("POST", "http://54.183.93.210:3001/data/category", data, saveResponse("categories", i), function(err) {
             console.log(err);
           });
@@ -179,7 +178,6 @@
           let paperworkReceived = Array.from(document.getElementById('select-4-' + i).selectedOptions).map(function(s) {return s.value});
           let description = document.getElementById('textarea-' + i).value;
           let data = {_id: item._id, title, timeline, required, prereqs, category, paperworkRequired, paperworkReceived, description};
-          console.log(data);
           makeRequest("POST", "http://54.183.93.210:3001/data/task", data, saveResponse("tasks", i), function(err) {
             console.log(err);
           });
@@ -201,7 +199,6 @@
           let category = document.getElementById('select-1-' + i).value;
           let description = document.getElementById('textarea-' + i).value;
           let data = {_id: item._id, title, category, description};
-          console.log(data);
           makeRequest("POST", "http://54.183.93.210:3001/data/paperwork", data, saveResponse("paperwork", i), function(err) {
             console.log(err);
           });

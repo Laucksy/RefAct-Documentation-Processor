@@ -1,4 +1,12 @@
-import { REPORT_HEADER, REPORT_FOOTER, TIMELINE_HEADER, TIMELINE_FOOTER, TIME_PERIODS } from '../constants'
+import {
+  LIST_END,
+  LIST_START,
+  REPORT_HEADER,
+  REPORT_FOOTER,
+  TIMELINE_HEADER,
+  TIMELINE_FOOTER,
+  TIME_PERIODS
+} from '../constants'
 
 const TIMELINE_ORIENTATION = 'landscape'
 
@@ -81,23 +89,40 @@ export const generateTimeline = (tasks) => {
 export const formatText = (str) => {
   let output = str.replace(/<tab>/g, '\\tab ').replace(/\n/g, '\\\\\n').replace(/&/g, '\\&').replace(/\$/g, '\\$')
 
-  if (output.indexOf('LIST[[') >= 0) {
-    let index = output.indexOf('LIST[[')
-    let front = output.substring(0, index)
-    let back = output.substring(output.indexOf(']]', index) + 3)
+  if (output.indexOf('LIST') >= 0) {
+    let startIndex = output.indexOf('LIST')
+    let endIndex = output.indexOf('ENDLIST', startIndex) + 8
 
-    index += 5
-    let list = '\\begin{enumerate}\n\\itemsep0em\n\\setlength{\\itemindent}{2em}\n'
-    while (output.indexOf('[', index) > 0) {
-      list = list + '\\item ' + output.substring(output.indexOf('[', index) + 1, output.indexOf(']', index)) + '\n'
-      index = output.indexOf(']', index) + 1
-    }
-    list = list + '\\end{enumerate}\n'
+    let front = output.substring(0, startIndex)
+    let middle = output.substring(startIndex, endIndex)
+    let back = output.substring(endIndex)
+
+    let list = ''
+    let depth = 0
+    middle.split('\n').slice(1, -1).forEach(line => {
+      let newDepth = getListDepth(line)
+
+      if (newDepth > depth) list = list + LIST_START
+      else if (newDepth < depth) list = list + LIST_END
+
+      if (depth > 0) list = list + '\\item ' + line + '\n'
+      depth = newDepth
+    })
+    list = list + LIST_END
 
     output = front + list + back
   }
 
   return output
+}
+
+const getListDepth = (line) => {
+  if (line.substring(0, 5) === '-----') return 5
+  else if (line.substring(0, 4) === '----') return 4
+  else if (line.substring(0, 3) === '---') return 3
+  else if (line.substring(0, 2) === '--') return 2
+  else if (line.substring(0, 1) === '-') return 1
+  else return 0
 }
 
 const generatePartialTimeline = (tasks, period) => {
