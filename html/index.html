@@ -257,9 +257,9 @@
           accordion.appendChild(generateCreateButton(i+1, options));
           setTimeout(function() { window.scrollTo(0, document.body.scrollHeight); }, 500);
         }
-      }
 
-      $('select').selectpicker();
+        $('select').selectpicker();
+      }
     }
 
     function saveResponse (key, i) {
@@ -280,7 +280,10 @@
          setTimeout(function () {
             accordion.appendChild(generateCard(data, options, i));
             if (++i < data.length) accordionLoop(i);
-            else accordion.appendChild(generateCreateButton(data.length, options));
+            else {
+              accordion.appendChild(generateCreateButton(data.length, options));
+              $('select').selectpicker();
+            }
          }, 50);
       })(0);
     }
@@ -317,7 +320,7 @@
 
       if (data[i].timeline) {
         let index = state.TIME_PERIODS.indexOf(data[i].timeline);
-        let color = Number(index + 7).toString(16);
+        let color = Number(index + 6).toString(16);
         cardHeader.style.cssText = "background-color: #" + color + color + color + "!important;";
       }
 
@@ -442,7 +445,7 @@
       if (opts.display) element.style.display = opts.display;
       if (opts.id) element.setAttribute("id", opts.id + i);
       if (opts.innerHTML) element.innerHTML = opts.innerHTML;
-      if (opts.type === "textarea") element.rows = opts.value.split("\n").length || "10";
+      if (opts.type === "textarea") element.rows = (opts.value.split("\n").length - 1) || "10";
 
       return element;
     }

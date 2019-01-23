@@ -28,7 +28,7 @@ export const generateFullReport = (categories, tasks, paperwork, appendices) => 
       if (tasksForTimePeriod.length > 0) result += `\t\t\\subsection{${period}}\n`
       tasksForTimePeriod.forEach(task => {
         result += `\t\t\t\\paragraph{${formatText(task.title) + (task.required ? '' : ' (Optional)')}}\n`
-        result += '\t\t\t' + formatText(task.description + '\n', '\t\t\t') + '\n'
+        result += '\t\t\t' + formatText(task.description + '\n', '\t\t\t')
 
         result += '\t\t\t' + formatText('<tab>') + 'Pre-Requisites:' + (task.prereqs.length
           ? task.prereqs.map(p => ` ${formatText(p.title)} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
@@ -79,6 +79,9 @@ export const generateTimeline = (tasks) => {
         return a.prereqs.map(p => p._id.toString()).indexOf(t._id.toString()) >= 0
       })
     }))
+    relevantTasks = relevantTasks.map(t => {
+      return {...t, prereqs: t.prereqs.filter(p => relevantTasks.some(a => a.title === p.title))}
+    })
 
     if (relevantTasks.length > 0) {
       result += `\\section*{${period}}\n`
@@ -139,10 +142,6 @@ const getExtraTabs = (line) => {
 const generatePartialTimeline = (tasks, period) => {
   let result = ''
 
-  tasks = tasks.map(t => {
-    return {...t, prereqs: t.prereqs.filter(p => tasks.some(a => a.title === p.title))}
-  })
-
   let queue = tasks.map(t => t)
   let layers = []
   while (queue.length > 0) {
@@ -152,6 +151,15 @@ const generatePartialTimeline = (tasks, period) => {
   }
 
   layers.forEach((layer, index) => {
+    layer.sort((a, b) => {
+      let common = a.prereqs.filter(p => b.prereqs.map(q => q.title).indexOf(p.title) >= 0)
+
+      if (common.length > 0) return 0
+      else if (index > 0 && a.prereqs.length > 0 && b.prereqs.length > 0) {
+        return layers[index - 1].map(l => l.title).indexOf(a.prereqs[0].title) - layers[index - 1].map(l => l.title).indexOf(b.prereqs[0].title)
+      } else return 1
+    })
+
     let left = layer.slice(0, Math.floor(layer.length / 2))
     let right = layer.slice(Math.floor((layer.length + 1) / 2))
     let middle = getMiddleOfLayer(layer)
@@ -161,9 +169,13 @@ const generatePartialTimeline = (tasks, period) => {
 
     let nextLayerDirec = (TIMELINE_ORIENTATION === 'portrait' ? 'below' : 'right')
     if (middle) {
-      result += addNode(middle, middleAboveID, index === 0 ? null : nextLayerDirec, period)
+      let distance = middleAboveID.indexOf('coordinate') >= 0 ? 3 : 1
+      result += addNode(middle, middleAboveID, index === 0 ? null : nextLayerDirec, period, distance)
       result += addEdges(middle)
-    } else result += `\\coordinate[${index === 0 ? '' : ', ' + nextLayerDirec + '=3cm of ' + middleAboveID}] (${middleID});\n`
+    } else {
+      let distance = middleAboveID.indexOf('coordinate') >= 0 ? 5 : 3
+      result += `\\coordinate[${index === 0 ? '' : ', ' + nextLayerDirec + '=' + distance + 'cm of ' + middleAboveID}] (${middleID});\n`
+    }
 
     result += addToSide(middleID, left, 'left', period)
     result += addToSide(middleID, right, 'right', period)
@@ -189,12 +201,12 @@ const addToSide = (middleID, arr, side, period) => {
   return result
 }
 
-const addNode = (task, prev, direction, period) => {
+const addNode = (task, prev, direction, period, distance = 1) => {
   let color
   if (task.timeline !== period) color = '{rgb:black,1;white,2}'
   else if (!task.required) color = '{rgb:yellow,1;white,2}'
 
-  return `\\node [block${direction ? ', ' + direction + '=1cm of ' + prev : ''}${color ? ', fill=' + color : ''}] (${task._id.toString()}) {${taskToNode(task)}};\n`
+  return `\\node [block${direction ? ', ' + direction + '=' + distance + 'cm of ' + prev : ''}${color ? ', fill=' + color : ''}] (${task._id.toString()}) {${taskToNode(task)}};\n`
 }
 
 const addEdges = (node) => {
