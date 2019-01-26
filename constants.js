@@ -37,7 +37,7 @@ export const REPORT_FOOTER = '\\end{document}'
 // \\tikzstyle{line} = [draw, -latex']
 export const TIMELINE_HEADER = `\\documentclass{article}
 \\usepackage[utf8]{inputenc}
-\\usepackage[margin=0.5in]{geometry}
+\\usepackage[margin=0.25in]{geometry}
 \\usepackage{tikz}
 \\usetikzlibrary{shapes,arrows}
 \\usetikzlibrary{positioning}

@@ -22,7 +22,7 @@ export const generateFullReport = (categories, tasks, paperwork, appendices) => 
     let tasksForCategory = tasks.filter(t => t.category._id.toString() === category._id.toString())
     let paperworkForCategory = paperwork.filter(p => p.category._id.toString() === category._id.toString())
 
-    result += '\t\\section{Tasks}\n'
+    if (tasksForCategory.length > 0) result += '\t\\section{Tasks}\n'
     TIME_PERIODS.forEach(period => {
       let tasksForTimePeriod = tasksForCategory.filter(t => t.timeline === period)
       if (tasksForTimePeriod.length > 0) result += `\t\t\\subsection{${period}}\n`
@@ -47,7 +47,7 @@ export const generateFullReport = (categories, tasks, paperwork, appendices) => 
       })
     })
 
-    result += '\t\\section{Paperwork}\n'
+    if (paperworkForCategory.length > 0) result += '\t\\section{Paperwork}\n'
     paperworkForCategory.forEach(paperwork => {
       result += `\t\t\\paragraph{${formatText(paperwork.title)}}\n`
       result += '\t\t' + formatText(paperwork.description + '\n', '\t\t') + '\n'
@@ -221,8 +221,8 @@ const addEdges = (node) => {
 
 const taskToNode = (task) => {
   let result = task.title
-  if (task.paperworkRequired.length > 0) result += '\nPaperwork Required:' + task.paperworkRequired.map(p => ' ' + p.title)
-  if (task.paperworkReceived.length > 0) result += '\nPaperwork Received:' + task.paperworkReceived.map(p => ' ' + p.title)
+  if (task.paperworkRequired.length > 0) result += '\nRequired:' + task.paperworkRequired.map(p => ' ' + p.title)
+  if (task.paperworkReceived.length > 0) result += '\nReceived:' + task.paperworkReceived.map(p => ' ' + p.title)
 
   return formatText(result)
 }

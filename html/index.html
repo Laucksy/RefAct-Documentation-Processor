@@ -266,7 +266,7 @@
       return function (res) {
         let dat = JSON.parse(res.responseText);
         updateState(key, dat, i);
-        document.getElementById("accordion-toggle-" + i).click();
+        //document.getElementById("accordion-toggle-" + i).click();
       };
     }
   </script>
@@ -445,7 +445,7 @@
       if (opts.display) element.style.display = opts.display;
       if (opts.id) element.setAttribute("id", opts.id + i);
       if (opts.innerHTML) element.innerHTML = opts.innerHTML;
-      if (opts.type === "textarea") element.rows = (opts.value.split("\n").length - 1) || "10";
+      if (opts.type === "textarea") element.rows = opts.value.split("\n").length > 10 ? "" + opts.value.split("\n").length : "10";
 
       return element;
     }
