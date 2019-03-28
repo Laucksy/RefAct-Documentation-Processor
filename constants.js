@@ -18,8 +18,9 @@ export const REPORT_HEADER = `\\documentclass{report}
 \\usepackage[utf8]{inputenc}
 \\usepackage[margin=1in]{geometry}
 \\setlength{\\parindent}{0cm}
+\\setcounter{tocdepth}{1}
 
-\\title{Refugee Action Documentation}
+\\title{Refugee Action Documentation - Report}
 \\author{Erik Laucks}
 \\date{\\today}
 
@@ -35,13 +36,23 @@ export const REPORT_HEADER = `\\documentclass{report}
 export const REPORT_FOOTER = '\\end{document}'
 
 // \\tikzstyle{line} = [draw, -latex']
-export const TIMELINE_HEADER = `\\documentclass{article}
+export const TIMELINE_HEADER = `\\documentclass[titlepage]{article}
 \\usepackage[utf8]{inputenc}
 \\usepackage[margin=0.25in]{geometry}
 \\usepackage{tikz}
 \\usetikzlibrary{shapes,arrows}
 \\usetikzlibrary{positioning}
+
+\\title{Refugee Action Documentation - Timeline}
+\\author{Erik Laucks}
+\\date{\\today}
+
+\\newcommand{\\tab}{\\null\\qquad}
+
 \\begin{document}
+
+\\maketitle
+\\newpage
 \\pagestyle{empty}
 
 % Define block styles

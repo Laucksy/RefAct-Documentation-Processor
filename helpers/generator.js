@@ -22,6 +22,12 @@ export const generateFullReport = (categories, tasks, paperwork, appendices) => 
     let tasksForCategory = tasks.filter(t => t.category._id.toString() === category._id.toString())
     let paperworkForCategory = paperwork.filter(p => p.category._id.toString() === category._id.toString())
 
+    if (paperworkForCategory.length > 0) result += '\t\\section{Paperwork}\n'
+    paperworkForCategory.forEach(paperwork => {
+      result += `\t\t\\paragraph{${formatText(paperwork.title)}}\n`
+      result += '\t\t' + formatText(paperwork.description + '\n', '\t\t') + '\n'
+    })
+
     if (tasksForCategory.length > 0) result += '\t\\section{Tasks}\n'
     TIME_PERIODS.forEach(period => {
       let tasksForTimePeriod = tasksForCategory.filter(t => t.timeline === period)
@@ -47,12 +53,6 @@ export const generateFullReport = (categories, tasks, paperwork, appendices) => 
       })
     })
 
-    if (paperworkForCategory.length > 0) result += '\t\\section{Paperwork}\n'
-    paperworkForCategory.forEach(paperwork => {
-      result += `\t\t\\paragraph{${formatText(paperwork.title)}}\n`
-      result += '\t\t' + formatText(paperwork.description + '\n', '\t\t') + '\n'
-    })
-
     result += '\n'
   })
 
@@ -67,7 +67,7 @@ export const generateFullReport = (categories, tasks, paperwork, appendices) => 
   return result
 }
 
-export const generateTimeline = (tasks) => {
+export const generateTimeline = (categories, tasks) => {
   let result = ''
 
   result += TIMELINE_HEADER + '\n'
@@ -89,6 +89,29 @@ export const generateTimeline = (tasks) => {
       result += generatePartialTimeline(relevantTasks, period)
       result += '\\end{tikzpicture}\n'
       result += '\n\\newpage\n'
+
+      result += '\\begin{flushleft}\n'
+      if (relevantTasks.length > 0) result += '\t\\section*{Tasks}\n'
+      relevantTasks.forEach(task => {
+        result += `\t\t\t\\paragraph{${formatText(task.title) + (task.required ? '' : ' (Optional)')}}\n`
+        result += '\t\t\t' + formatText(task.description + '\n', '\t\t\t')
+
+        result += '\t\t\t' + formatText('<tab>') + 'Pre-Requisites:' + (task.prereqs.length
+          ? task.prereqs.map(p => ` ${formatText(p.title)} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
+          : ' None')
+        result += formatText('\n')
+
+        result += '\t\t\t' + formatText('<tab>') + 'Paperwork Required:' + (task.paperworkRequired.length
+          ? task.paperworkRequired.map(p => ` ${formatText(p.title)} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
+          : ' None')
+        result += formatText('\n')
+
+        result += '\t\t\t' + formatText('<tab>') + 'Paperwork Received:' + (task.paperworkReceived.length
+          ? task.paperworkReceived.map(p => ` ${formatText(p.title)} (${categories.find(c => c._id.toString() === p.category.toString()).title})`)
+          : ' None')
+        result += formatText('\n')
+      })
+      result += '\\end{flushleft}\n'
     }
   })
 
@@ -97,7 +120,7 @@ export const generateTimeline = (tasks) => {
 }
 
 export const formatText = (str, tabs = '') => {
-  let output = str.replace(/<tab>/g, '\\tab ').replace(/\n/g, '\\\\\n').replace(/&/g, '\\&').replace(/\$/g, '\\$')
+  let output = str.replace(/<tab>/g, '\\tab ').replace(/\n/g, '\\\\\n').replace(/&/g, '\\&').replace(/\$/g, '\\$').replace(/%/g, '\\%').replace(/#/g, '\\#')
 
   if (output.indexOf('LIST') >= 0) {
     let startIndex = output.indexOf('LIST')
@@ -203,10 +226,12 @@ const addToSide = (middleID, arr, side, period) => {
 
 const addNode = (task, prev, direction, period, distance = 1) => {
   let color
-  if (task.timeline !== period) color = '{rgb:black,1;white,2}'
-  else if (!task.required) color = '{rgb:yellow,1;white,2}'
+  let status = task.timeline !== period ? -1 : (!task.required ? 1 : 0)
 
-  return `\\node [block${direction ? ', ' + direction + '=' + distance + 'cm of ' + prev : ''}${color ? ', fill=' + color : ''}] (${task._id.toString()}) {${taskToNode(task)}};\n`
+  if (status === -1) color = '{rgb:black,1;white,2}'
+  else if (status === 1) color = '{rgb:yellow,1;white,2}'
+
+  return `\\node [block${direction ? ', ' + direction + '=' + distance + 'cm of ' + prev : ''}${color ? ', fill=' + color : ''}] (${task._id.toString()}) {${taskToNode(task, status)}};\n`
 }
 
 const addEdges = (node) => {
@@ -219,10 +244,11 @@ const addEdges = (node) => {
   return result
 }
 
-const taskToNode = (task) => {
-  let result = task.title
+const taskToNode = (task, status) => {
+  let result = `${task.title} (${task.category.title})`
   if (task.paperworkRequired.length > 0) result += '\nRequired:' + task.paperworkRequired.map(p => ' ' + p.title)
   if (task.paperworkReceived.length > 0) result += '\nReceived:' + task.paperworkReceived.map(p => ' ' + p.title)
+  result += `\nType: ${status === -1 ? 'Pre-requisite' : (status === 1 ? 'Optional' : 'Required')}`
 
   return formatText(result)
 }

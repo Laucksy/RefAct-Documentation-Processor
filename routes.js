@@ -100,13 +100,13 @@ index.route('/generate/:type').get(wrap(async (req, res) => {
 
   try {
     if (type === 'report') writeToFile(inputFile, generateFullReport(categories, tasks, paperwork, appendices))
-    else if (type === 'timeline') writeToFile(inputFile, generateTimeline(tasks))
+    else if (type === 'timeline') writeToFile(inputFile, generateTimeline(categories, tasks))
 
     const pdf = latex(readFromFile(inputFile), {passes: 2})
     pdf.pipe(generateOutputStream(outputFile))
 
     pdf.on('error', err => logError(err))
-    pdf.on('finish', () => sendResponse(res, `http://54.183.93.210:3001/${outputFile}`))
+    pdf.on('finish', () => sendResponse(res, `/${outputFile}`))
   } catch (e) {
     logError(e)
   }

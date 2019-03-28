@@ -53,10 +53,11 @@
       docType: "report",
       TIME_PERIODS: []
     }
+    const HOST = "http://13.52.185.145:3001"
 
     window.onload = function () {
       handleClick(state.active);
-      makeRequest("GET", "http://54.183.93.210:3001/data", null, function (res) {
+      makeRequest("GET", "/data", null, function (res) {
         let data = JSON.parse(res.responseText);
         updateState(data);
       }, function(err) {
@@ -93,8 +94,8 @@
     }
 
     function loadDoc() {
-      makeRequest("GET", "http://54.183.93.210:3001/generate/" + state.docType, null, function (res) {
-        window.open(res.responseText, "_blank");
+      makeRequest("GET", "/generate/" + state.docType, null, function (res) {
+        window.open(HOST + res.responseText, "_blank");
       });
     }
 
@@ -108,7 +109,7 @@
          error(this);
        }
       };
-      xhttp.open(method, url, true);
+      xhttp.open(method, HOST + url, true);
       if (method === "GET") xhttp.send();
       else {
         xhttp.setRequestHeader("Content-Type", "application/json");
@@ -133,7 +134,7 @@
           let number = parseInt(document.getElementById("input-2-" + i).value);
           let intro = document.getElementById("textarea-" + i).value;
           let data = {_id: item._id, title, number, intro};
-          makeRequest("POST", "http://54.183.93.210:3001/data/category", data, saveResponse("categories", i), function(err) {
+          makeRequest("POST", "/data/category", data, saveResponse("categories", i), function(err) {
             console.log(err);
           });
         },
@@ -182,7 +183,7 @@
           let paperworkReceived = Array.from(document.getElementById('select-4-' + i).selectedOptions).map(function(s) {return s.value});
           let description = document.getElementById('textarea-' + i).value;
           let data = {_id: item._id, title, timeline, required, prereqs, category, paperworkRequired, paperworkReceived, description};
-          makeRequest("POST", "http://54.183.93.210:3001/data/task", data, saveResponse("tasks", i), function(err) {
+          makeRequest("POST", "/data/task", data, saveResponse("tasks", i), function(err) {
             console.log(err);
           });
         },
@@ -203,7 +204,7 @@
           let category = document.getElementById('select-1-' + i).value;
           let description = document.getElementById('textarea-' + i).value;
           let data = {_id: item._id, title, category, description};
-          makeRequest("POST", "http://54.183.93.210:3001/data/paperwork", data, saveResponse("paperwork", i), function(err) {
+          makeRequest("POST", "/data/paperwork", data, saveResponse("paperwork", i), function(err) {
             console.log(err);
           });
         },
@@ -224,7 +225,7 @@
           let category = document.getElementById('select-1-' + i).value;
           let description = document.getElementById('textarea-' + i).value;
           let data = {_id: item._id, title, category, description};
-          makeRequest("POST", "http://54.183.93.210:3001/data/appendix", data, saveResponse("appendices", i), function(err) {
+          makeRequest("POST", "/data/appendix", data, saveResponse("appendices", i), function(err) {
             console.log(err);
           });
         },

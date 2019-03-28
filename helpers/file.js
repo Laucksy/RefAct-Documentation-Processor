@@ -1,11 +1,11 @@
 import fs from 'fs'
 
 export const writeToFile = (file, data) => {
-  fs.writeFileSync(`tex/${file}`, data)
+  fs.writeFileSync(`public/${file}`, data)
 }
 
 export const readFromFile = (inputFile) => {
-  return fs.readFileSync(`tex/${inputFile}`, 'utf-8')
+  return fs.readFileSync(`public/${inputFile}`, 'utf-8')
 }
 
 export const generateOutputStream = (outputFile) => {
